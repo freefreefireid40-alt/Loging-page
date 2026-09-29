@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Facebook Style</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #18191a;
+            font-family: Arial, sans-serif;
+            color: #e4e6eb;
+        }
+        .header {
+            background-color: #242526;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #393a3b;
+        }
+        .header h2 {
+            margin: 0;
+            color: #2d88ff;
+        }
+        .logout-btn {
+            background-color: #d93838;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .logout-btn:hover {
+            background-color: #b52b2b;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #242526;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .cover-photo {
+            height: 200px;
+            background: linear-gradient(to right, #4e54c8, #8f94fb);
+        }
+        .profile-info {
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            margin-top: -60px;
+        }
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #242526;
+            background-color: #b0b3b8;
+            display: inline-block;
+            background-size: cover;
+            background-position: center;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .profile-bio {
+            color: #b0b3b8;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .post-box {
+            background: #242526;
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .post-box textarea {
+            width: 100%;
+            background: #3a3b3c;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            color: white;
+            resize: none;
+            box-sizing: border-box;
+            height: 80px;
+        }
+        .post-box button {
+            background-color: #2d88ff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .post-box button:hover {
+            background-color: #1a6fd8;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>MiniBook</h2>
+        <button class="logout-btn" onclick="logout()">Log Out</button>
+    </div>
+
+    <div class="container">
+        <div class="cover-photo"></div>
+        <div class="profile-info">
+            <div class="profile-pic"></div>
+            <div class="profile-name" id="display-name">Loading...</div>
+            <div class="profile-bio" id="display-bio">Hey there! I am using this platform.</div>
+        </div>
+    </div>
+
+    <div class="post-box clearfix">
+        <textarea placeholder="What's on your mind?"></textarea>
+        <button>Post</button>
+    </div>
+
+    <script>
+        // চেক করা ইউজার কে লগইন করেছে এবং তার নাম প্রোফাইলে দেখানো
+        const currentUser = localStorage.getItem("currentUser");
+        let users = JSON.parse(localStorage.getItem("allUsers")) || [];
+
+        if (!currentUser) {
+            alert("দয়া করে আগে লগইন করুন!");
+            window.location.href = "index.html";
+        } else {
+            const user = users.find(u => u.username === currentUser);
+            if (user) {
+                document.getElementById("display-name").innerText = user.fullname || user.username;
+                document.getElementById("display-bio").innerText = user.bio;
+            }
+        }
+
+        // লগআউট ফাংশন
+        function logout() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
