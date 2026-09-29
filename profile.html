@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialVibe - Profile</title>
+    <meta name="manifest" href="manifest.json">
     <!-- Firebase App & Firestore & Storage CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -34,10 +35,6 @@
             color: #2d88ff;
             cursor: pointer;
         }
-        .nav-right {
-            display: flex;
-            gap: 10px;
-        }
         .nav-btn {
             background-color: #3a3b3c;
             color: white;
@@ -55,7 +52,6 @@
             margin: 0 auto;
             padding: 0;
         }
-        /* Profile Cover & Header Section */
         .profile-cover-section {
             background-color: #242526;
             border-bottom-left-radius: 8px;
@@ -118,7 +114,6 @@
             color: #2d88ff;
             border-bottom: 3px solid #2d88ff;
         }
-        /* Post Content Area */
         .content-area {
             padding: 0 10px;
         }
@@ -206,13 +201,12 @@
     </div>
 
     <div class="container">
-        <!-- Cover Photo & Profile Info Header -->
         <div class="profile-cover-section">
             <div class="cover-photo"></div>
             <div class="profile-info-container">
                 <div id="profile-avatar" class="profile-avatar-wrapper">U</div>
                 <div id="profile-name" class="profile-name">@User</div>
-                <div class="profile-bio">SocialVibe Verified Creator & Member</div>
+                <div class="profile-bio">SocialVibe Verified Creator</div>
                 
                 <div class="profile-tabs">
                     <div class="tab-item active">Posts</div>
@@ -223,7 +217,7 @@
         </div>
 
         <div class="content-area">
-            <div class="section-title">My Activities & Posts</div>
+            <div class="section-title">My Posts & Status</div>
             <div id="user-posts-container">
                 <div class="feed-section">Loading your posts...</div>
             </div>
@@ -293,13 +287,13 @@
 
                         if (post.mediaType === 'video') {
                             mediaHtml = `
-                                <div class="post-media-container" style="display: block;">
+                                <div class="post-media-container">
                                     <video src="${post.mediaUrl}" class="post-media" controls></video>
                                     <button class="download-media-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save to Gallery</button>
                                 </div>`;
                         } else {
                             mediaHtml = `
-                                <div class="post-media-container" style="display: block;">
+                                <div class="post-media-container">
                                     <img src="${post.mediaUrl}" alt="Post Image" class="post-media">
                                     <button class="download-media-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save to Gallery</button>
                                 </div>`;
