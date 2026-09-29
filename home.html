@@ -16,7 +16,6 @@
             font-family: Arial, sans-serif;
             color: #e4e6eb;
         }
-        /* Top Navigation Bar */
         .navbar {
             background-color: #242526;
             padding: 10px 20px;
@@ -50,15 +49,11 @@
         .nav-btn:hover {
             background-color: #4e4f50;
         }
-
-        /* Main Container */
         .container {
             max-width: 600px;
             margin: 20px auto;
             padding: 0 10px;
         }
-
-        /* Create Post Box */
         .create-post {
             background: #242526;
             padding: 15px;
@@ -97,8 +92,6 @@
             clear: both;
             display: table;
         }
-
-        /* Post Card Style */
         .post-card {
             background: #242526;
             padding: 15px;
@@ -120,6 +113,62 @@
         .post-time {
             font-size: 12px;
             color: #b0b3b8;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #393a3b;
+            padding-bottom: 8px;
+        }
+        .post-actions {
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+            border-bottom: 1px solid #393a3b;
+            margin-bottom: 10px;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            color: #b0b3b8;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .action-btn:hover {
+            color: #2d88ff;
+        }
+        .comments-section {
+            margin-top: 10px;
+        }
+        .comment-box {
+            font-size: 13px;
+            background: #3a3b3c;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .comment-input-container {
+            display: flex;
+            margin-top: 8px;
+            gap: 5px;
+        }
+        .comment-input {
+            flex: 1;
+            background: #3a3b3c;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
+        }
+        .comment-btn {
+            background: #2d88ff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
         }
         .feed-section {
             background: #242526;
@@ -132,7 +181,6 @@
 </head>
 <body>
 
-    <!-- Top Navigation -->
     <div class="navbar">
         <div class="nav-logo" onclick="window.location.reload()">SocialVibe</div>
         <div class="nav-right">
@@ -141,24 +189,18 @@
         </div>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
-        
-        <!-- Create Post Box -->
         <div class="create-post clearfix">
             <textarea id="post-text" rows="3" placeholder="What's on your mind?"></textarea>
             <button onclick="createPost()">Post</button>
         </div>
 
-        <!-- Post Feed Container -->
         <div id="posts-container">
             <div class="feed-section">Loading posts...</div>
         </div>
-
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB_44EQtMe4dZhNtKBo2YYKMpsUXKvOtdc",
             authDomain: "socialvibe-b0abb.firebaseapp.com",
@@ -169,11 +211,9 @@
             measurementId: "G-E5399L9T5T"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // লগইন চেক করা
         const currentUser = localStorage.getItem("currentUser");
         if (!currentUser) {
             alert("দয়া করে আগে লগইন করুন!");
@@ -193,7 +233,6 @@
             window.location.href = "index.html";
         }
 
-        // নতুন পোস্ট তৈরি করা
         function createPost() {
             const content = document.getElementById("post-text").value.trim();
             if (!content) {
@@ -208,7 +247,9 @@
                 author: currentUser,
                 content: content,
                 createdAt: timeString,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                likes: [],
+                comments: []
             })
             .then(() => {
                 document.getElementById("post-text").value = "";
@@ -218,7 +259,6 @@
             });
         }
 
-        // রিয়েল-টাইম পোস্ট লোড এবং ডিলিট করার ফিচার সহ
         function loadPostsRealtime() {
             const container = document.getElementById("posts-container");
 
@@ -238,18 +278,45 @@
                     let post = doc.data();
                     let postId = doc.id;
                     
-                    // শুধু নিজের পোস্টে ডিলিট বাটন দেখাবে
                     let deleteBtn = "";
                     if (post.author === currentUser) {
                         let safePostId = "'" + postId + "'";
                         deleteBtn = `<button onclick="deletePost(${safePostId})" style="background:none; border:none; color:#f44336; float:right; cursor:pointer; font-weight:bold;">Delete</button>`;
                     }
 
+                    // Likes handling
+                    let likes = post.likes || [];
+                    let isLiked = likes.includes(currentUser);
+                    let likeBtnColor = isLiked ? "#2d88ff" : "#b0b3b8";
+                    let likeText = isLiked ? "Liked (" + likes.length + ")" : "Like (" + likes.length + ")";
+
+                    // Comments handling
+                    let comments = post.comments || [];
+                    let commentsHtml = "";
+                    comments.forEach(c => {
+                        commentsHtml += `<div class="comment-box"><b>@${c.user}:</b> ${c.text}</div>`;
+                    });
+
+                    let safeId = "'" + postId + "'";
+
                     html += `
                         <div class="post-card">
                             <div class="post-author">@${post.author || 'Anonymous'} ${deleteBtn}</div>
                             <div class="post-content">${post.content}</div>
                             <div class="post-time">${post.createdAt || ''}</div>
+                            
+                            <div class="post-actions">
+                                <button class="action-btn" style="color: ${likeBtnColor};" onclick="toggleLike(${safeId})">👍 ${likeText}</button>
+                                <button class="action-btn">💬 Comments (${comments.length})</button>
+                            </div>
+
+                            <div class="comments-section">
+                                ${commentsHtml}
+                                <div class="comment-input-container">
+                                    <input type="text" id="comment-input-${postId}" class="comment-input" placeholder="Write a comment...">
+                                    <button class="comment-btn" onclick="addComment(${safeId})">Send</button>
+                                </div>
+                            </div>
                         </div>
                     `;
                 });
@@ -258,11 +325,55 @@
             });
         }
 
-        // পোস্ট ডিলিট করার ফাংশন
+        function toggleLike(postId) {
+            const postRef = db.collection("posts").doc(postId);
+            db.runTransaction((transaction) => {
+                return transaction.get(postRef).then((doc) => {
+                    if (!doc.exists) throw "Post does not exist!";
+                    let postData = doc.data();
+                    let likes = postData.likes || [];
+                    
+                    if (likes.includes(currentUser)) {
+                        likes = likes.filter(user => user !== currentUser);
+                    } else {
+                        likes.push(currentUser);
+                    }
+                    transaction.update(postRef, { likes: likes });
+                });
+            }).catch((error) => {
+                console.log("Like error: ", error);
+            });
+        }
+
+        function addComment(postId) {
+            const inputField = document.getElementById(`comment-input-${postId}`);
+            const commentText = inputField.value.trim();
+            if (!commentText) return;
+
+            const postRef = db.collection("posts").doc(postId);
+            db.runTransaction((transaction) => {
+                return transaction.get(postRef).then((doc) => {
+                    if (!doc.exists) throw "Post does not exist!";
+                    let postData = doc.data();
+                    let comments = postData.comments || [];
+                    
+                    comments.push({
+                        user: currentUser,
+                        text: commentText
+                    });
+
+                    transaction.update(postRef, { comments: comments });
+                });
+            }).then(() => {
+                inputField.value = "";
+            }).catch((error) => {
+                console.log("Comment error: ", error);
+            });
+        }
+
         function deletePost(postId) {
             if (confirm("আপনি কি নিশ্চিতভাবে এই পোস্টটি ডিলিট করতে চান?")) {
-                db.collection("posts").doc(postId).delete()
-                .catch((error) => {
+                db.collection("posts").doc(postId).delete().catch((error) => {
                     alert("পোস্ট ডিলিট করতে সমস্যা হয়েছে: " + error.message);
                 });
             }
