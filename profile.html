@@ -51,33 +51,46 @@
             background-color: #4e4f50;
         }
         .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0 10px;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 0;
         }
-        .profile-header {
-            background: #242526;
-            padding: 25px;
-            border-radius: 8px;
-            text-align: center;
+        /* Profile Cover & Header Section */
+        .profile-cover-section {
+            background-color: #242526;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .profile-avatar {
-            width: 90px;
-            height: 90px;
+        .cover-photo {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #2d88ff, #1a6fd8);
+        }
+        .profile-info-container {
+            padding: 0 20px 20px 20px;
+            text-align: center;
+            position: relative;
+        }
+        .profile-avatar-wrapper {
+            width: 130px;
+            height: 130px;
+            margin: -65px auto 10px auto;
+            border-radius: 50%;
+            border: 4px solid #242526;
             background-color: #2d88ff;
             color: white;
-            font-size: 36px;
+            font-size: 50px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            margin: 0 auto 15px auto;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
         .profile-name {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
             color: #e4e6eb;
             margin-bottom: 5px;
@@ -85,12 +98,36 @@
         .profile-bio {
             font-size: 14px;
             color: #b0b3b8;
+            margin-bottom: 15px;
+        }
+        .profile-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            border-top: 1px solid #393a3b;
+            padding-top: 12px;
+        }
+        .tab-item {
+            color: #b0b3b8;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .tab-item.active {
+            color: #2d88ff;
+            border-bottom: 3px solid #2d88ff;
+        }
+        /* Post Content Area */
+        .content-area {
+            padding: 0 10px;
         }
         .section-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 15px;
             color: #2d88ff;
+            padding-left: 5px;
         }
         .post-card {
             background: #242526;
@@ -154,6 +191,7 @@
             border-radius: 8px;
             text-align: center;
             color: #b0b3b8;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -162,21 +200,33 @@
     <div class="navbar">
         <div class="nav-logo" onclick="goToHome()">SocialVibe</div>
         <div class="nav-right">
-            <button class="nav-btn" onclick="goToHome()">Home</button>
+            <button class="nav-btn" onclick="goToHome()">Home Feed</button>
             <button class="nav-btn" onclick="logout()" style="background-color: #d32f2f;">Logout</button>
         </div>
     </div>
 
     <div class="container">
-        <div class="profile-header">
-            <div id="profile-avatar" class="profile-avatar">U</div>
-            <div id="profile-name" class="profile-name">@User</div>
-            <div class="profile-bio">SocialVibe Active Member</div>
+        <!-- Cover Photo & Profile Info Header -->
+        <div class="profile-cover-section">
+            <div class="cover-photo"></div>
+            <div class="profile-info-container">
+                <div id="profile-avatar" class="profile-avatar-wrapper">U</div>
+                <div id="profile-name" class="profile-name">@User</div>
+                <div class="profile-bio">SocialVibe Verified Creator & Member</div>
+                
+                <div class="profile-tabs">
+                    <div class="tab-item active">Posts</div>
+                    <div class="tab-item" onclick="alert('Photos feature coming soon!')">Photos</div>
+                    <div class="tab-item" onclick="alert('Videos feature coming soon!')">Videos</div>
+                </div>
+            </div>
         </div>
 
-        <div class="section-title">My Posts & Status</div>
-        <div id="user-posts-container">
-            <div class="feed-section">Loading your posts...</div>
+        <div class="content-area">
+            <div class="section-title">My Activities & Posts</div>
+            <div id="user-posts-container">
+                <div class="feed-section">Loading your posts...</div>
+            </div>
         </div>
     </div>
 
