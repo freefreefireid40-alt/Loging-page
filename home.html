@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialVibe - Home Feed</title>
+    <title>SocialVibe - Home</title>
+    <meta name="manifest" href="manifest.json">
     <!-- Firebase App & Firestore & Storage CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -16,10 +17,12 @@
             background-color: #18191a;
             font-family: Arial, sans-serif;
             color: #e4e6eb;
+            padding-bottom: 60px; /* Space for bottom nav */
         }
-        .navbar {
+        /* Top Navbar (Facebook Style) */
+        .top-navbar {
             background-color: #242526;
-            padding: 10px 20px;
+            padding: 10px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -34,33 +37,120 @@
             color: #2d88ff;
             cursor: pointer;
         }
-        .nav-right {
+        .top-icons {
             display: flex;
             gap: 10px;
         }
-        .nav-btn {
+        .icon-btn {
             background-color: #3a3b3c;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-weight: bold;
+            font-size: 16px;
         }
-        .nav-btn:hover {
+        .icon-btn:hover {
             background-color: #4e4f50;
         }
+
+        /* Bottom Navbar (Facebook Style) */
+        .bottom-navbar {
+            background-color: #242526;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 55px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #393a3b;
+            z-index: 1000;
+        }
+        .nav-tab {
+            background: none;
+            border: none;
+            color: #b0b3b8;
+            font-size: 22px;
+            cursor: pointer;
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-tab.active {
+            color: #2d88ff;
+            border-bottom: 3px solid #2d88ff;
+        }
+
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 15px auto;
             padding: 0 10px;
         }
+
+        /* Stories Section */
+        .stories-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+        .stories-container::-webkit-scrollbar {
+            display: none;
+        }
+        .story-card {
+            min-width: 110px;
+            height: 180px;
+            background: #242526;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 8px;
+            cursor: pointer;
+            border: 1px solid #393a3b;
+        }
+        .story-card.create-story {
+            justify-content: center;
+            align-items: center;
+            background: #242526;
+        }
+        .story-card img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .story-user {
+            position: relative;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* Create Post Box */
         .create-post {
             background: #242526;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .create-post textarea {
             width: 100%;
@@ -129,6 +219,8 @@
             clear: both;
             display: table;
         }
+
+        /* Post Card */
         .post-card {
             background: #242526;
             padding: 15px;
@@ -140,7 +232,6 @@
             font-weight: bold;
             color: #2d88ff;
             margin-bottom: 8px;
-            cursor: pointer;
         }
         .post-content {
             color: #e4e6eb;
@@ -222,39 +313,13 @@
         .comment-text {
             color: #e4e6eb;
             word-break: break-word;
-            margin-bottom: 5px;
         }
-        .comment-footer-actions {
-            display: flex;
-            gap: 15px;
-            font-size: 11px;
-            color: #b0b3b8;
-        }
-        .comment-action-link {
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .comment-action-link:hover {
-            color: #2d88ff;
-            text-decoration: underline;
-        }
-        .reply-container {
-            margin-top: 6px;
-            margin-left: 15px;
-            border-left: 2px solid #2d88ff;
-            padding-left: 8px;
-        }
-        .reply-box {
-            font-size: 12px;
-            margin-bottom: 4px;
-            color: #d0d2d6;
-        }
-        .comment-input-container, .reply-input-container {
+        .comment-input-container {
             display: flex;
             margin-top: 8px;
             gap: 5px;
         }
-        .comment-input, .reply-input {
+        .comment-input {
             flex: 1;
             background: #3a3b3c;
             border: 1px solid #4e4f50;
@@ -264,7 +329,7 @@
             font-size: 13px;
             outline: none;
         }
-        .comment-btn, .reply-btn {
+        .comment-btn {
             background: #2d88ff;
             color: white;
             border: none;
@@ -273,10 +338,6 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 13px;
-        }
-        .reply-input-box {
-            display: none;
-            margin-top: 5px;
         }
         .feed-section {
             background: #242526;
@@ -289,18 +350,35 @@
 </head>
 <body>
 
-    <div class="navbar">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
         <div class="nav-logo" onclick="window.location.reload()">SocialVibe</div>
-        <div class="nav-right">
-            <button class="nav-btn" onclick="goToProfile()">Profile</button>
-            <button class="nav-btn" onclick="logout()" style="background-color: #d32f2f;">Logout</button>
+        <div class="top-icons">
+            <button class="icon-btn" onclick="goToProfile()" title="Profile">👤</button>
+            <button class="icon-btn" onclick="logout()" title="Logout" style="color: #f44336;">🚪</button>
         </div>
     </div>
 
     <div class="container">
-        <!-- Status / Create Post Box -->
+        <!-- Stories Row -->
+        <div class="stories-container">
+            <div class="story-card create-story" onclick="alert('Story feature coming soon!')">
+                <span style="font-size: 24px; color: #2d88ff; font-weight: bold;">+</span>
+                <span class="story-user" style="color: #e4e6eb; margin-top: 5px;">Create story</span>
+            </div>
+            <div class="story-card">
+                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" alt="Story">
+                <span class="story-user">Tanvir Ahmed</span>
+            </div>
+            <div class="story-card">
+                <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05" alt="Story">
+                <span class="story-user">Sumaiya Akter</span>
+            </div>
+        </div>
+
+        <!-- Create Post Box -->
         <div class="create-post clearfix">
-            <textarea id="post-text" rows="3" placeholder="What's on your mind, status বা কিছু শেয়ার করুন..."></textarea>
+            <textarea id="post-text" rows="3" placeholder="What's on your mind?"></textarea>
             
             <div class="post-options">
                 <div class="upload-btn-wrapper">
@@ -311,13 +389,23 @@
             </div>
             
             <div style="margin-top: 10px;" class="clearfix">
-                 <button onclick="createPost()" class="submit-post">Post Status</button>
+                 <button onclick="createPost()" class="submit-post">Post</button>
             </div>
         </div>
 
+        <!-- Feed Container -->
         <div id="posts-container">
             <div class="feed-section">Loading posts...</div>
         </div>
+    </div>
+
+    <!-- Bottom Facebook-Style Navbar -->
+    <div class="bottom-navbar">
+        <button class="nav-tab active" onclick="window.location.reload()" title="Home">🏠</button>
+        <button class="nav-tab" onclick="alert('Videos feed coming soon!')" title="Videos">▶️</button>
+        <button class="nav-tab" onclick="alert('Friends feature coming soon!')" title="Friends">👥</button>
+        <button class="nav-tab" onclick="alert('No new notifications')" title="Notifications">🔔</button>
+        <button class="nav-tab" onclick="goToProfile()" title="Profile & Settings">☰</button>
     </div>
 
     <script>
@@ -439,69 +527,38 @@
                         deleteBtn = `<button onclick="deletePost(${safePostId})" style="background:none; border:none; color:#f44336; float:right; cursor:pointer; font-weight:bold;">Delete</button>`;
                     }
 
-                    // Media handling with Download button
                     let mediaHtml = "";
                     if (post.mediaUrl) {
-                        let encodedUrl = encodeURIComponent(post.mediaUrl);
                         let fileExt = post.mediaType === 'video' ? 'mp4' : 'jpg';
                         let fileName = `SocialVibe_${Date.now()}.${fileExt}`;
 
                         if (post.mediaType === 'video') {
                             mediaHtml = `
-                                <div class="post-media-container" style="display: block;">
+                                <div class="post-media-container">
                                     <video src="${post.mediaUrl}" class="post-media" controls></video>
                                     <button class="download-media-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save to Gallery</button>
                                 </div>`;
                         } else {
                             mediaHtml = `
-                                <div class="post-media-container" style="display: block;">
+                                <div class="post-media-container">
                                     <img src="${post.mediaUrl}" alt="Post Image" class="post-media">
                                     <button class="download-media-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save to Gallery</button>
                                 </div>`;
                         }
                     }
 
-                    // Likes handling
                     let likes = post.likes || [];
                     let isLiked = likes.includes(currentUser);
                     let likeBtnColor = isLiked ? "#2d88ff" : "#b0b3b8";
                     let likeText = isLiked ? "Liked (" + likes.length + ")" : "Like (" + likes.length + ")";
 
-                    // Comments handling
                     let comments = post.comments || [];
                     let commentsHtml = "";
-                    
-                    comments.forEach((c, index) => {
-                        let cLikes = c.likes || [];
-                        let isCLiked = cLikes.includes(currentUser);
-                        let cLikeColor = isCLiked ? "#2d88ff" : "#b0b3b8";
-                        let cLikeText = isCLiked ? `Liked (${cLikes.length})` : `Like (${cLikes.length})`;
-                        
-                        let replies = c.replies || [];
-                        let repliesHtml = "";
-                        replies.forEach(r => {
-                            repliesHtml += `<div class="reply-box"><b>@${r.user}:</b> ${r.text}</div>`;
-                        });
-
-                        let commentIndex = index;
-
+                    comments.forEach((c) => {
                         commentsHtml += `
                             <div class="comment-card">
                                 <div class="comment-header">@${c.user}</div>
                                 <div class="comment-text">${c.text}</div>
-                                <div class="comment-footer-actions">
-                                    <span class="comment-action-link" style="color: ${cLikeColor};" onclick="toggleCommentLike('${postId}', ${commentIndex})">${cLikeText}</span>
-                                    <span class="comment-action-link" onclick="toggleReplyBox('${postId}-${commentIndex}')">Reply</span>
-                                </div>
-                                <div class="reply-container">
-                                    ${repliesHtml}
-                                    <div id="reply-box-${postId}-${commentIndex}" class="reply-input-box">
-                                        <div class="reply-input-container">
-                                            <input type="text" id="reply-input-${postId}-${commentIndex}" class="reply-input" placeholder="Write a reply...">
-                                            <button class="reply-btn" onclick="addReply('${postId}', ${commentIndex})">Reply</button>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         `;
                     });
@@ -535,7 +592,6 @@
             });
         }
 
-        // Direct Download/Save Function for Gallery
         function downloadFile(fileUrl, fileName) {
             fetch(fileUrl)
                 .then(response => response.blob())
@@ -551,7 +607,6 @@
                     document.body.removeChild(a);
                 })
                 .catch(() => {
-                    // Fallback option if direct fetch fails due to CORS
                     window.open(fileUrl, '_blank');
                 });
         }
@@ -590,9 +645,7 @@
                     
                     comments.push({
                         user: currentUser,
-                        text: commentText,
-                        likes: [],
-                        replies: []
+                        text: commentText
                     });
 
                     transaction.update(postRef, { comments: comments });
@@ -601,69 +654,6 @@
                 inputField.value = "";
             }).catch((error) => {
                 console.log("Comment error: ", error);
-            });
-        }
-
-        function toggleCommentLike(postId, commentIndex) {
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let comments = postData.comments || [];
-                    
-                    if (comments[commentIndex]) {
-                        let cLikes = comments[commentIndex].likes || [];
-                        if (cLikes.includes(currentUser)) {
-                            cLikes = cLikes.filter(user => user !== currentUser);
-                        } else {
-                            cLikes.push(currentUser);
-                        }
-                        comments[commentIndex].likes = cLikes;
-                        transaction.update(postRef, { comments: comments });
-                    }
-                });
-            }).catch((error) => {
-                console.log("Comment like error: ", error);
-            });
-        }
-
-        function toggleReplyBox(boxId) {
-            const box = document.getElementById(`reply-box-${boxId}`);
-            if (box.style.display === "block") {
-                box.style.display = "none";
-            } else {
-                box.style.display = "block";
-            }
-        }
-
-        function addReply(postId, commentIndex) {
-            const inputField = document.getElementById(`reply-input-${postId}-${commentIndex}`);
-            const replyText = inputField.value.trim();
-            if (!replyText) return;
-
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let comments = postData.comments || [];
-                    
-                    if (comments[commentIndex]) {
-                        if (!comments[commentIndex].replies) {
-                            comments[commentIndex].replies = [];
-                        }
-                        comments[commentIndex].replies.push({
-                            user: currentUser,
-                            text: replyText
-                        });
-                        transaction.update(postRef, { comments: comments });
-                    }
-                });
-            }).then(() => {
-                inputField.value = "";
-            }).catch((error) => {
-                console.log("Reply error: ", error);
             });
         }
 
