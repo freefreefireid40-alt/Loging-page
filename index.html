@@ -3,31 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lamp Login & Profile System</title>
+    <title>SocialVibe - Login & Signup</title>
     <style>
-        /* বেসিক স্টাইল এবং ল্যাম্প লগইন লেআউট */
         body {
             margin: 0;
             padding: 0;
-            background-color: #121212;
+            background-color: #18191a;
             font-family: Arial, sans-serif;
+            color: #e4e6eb;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: #fff;
         }
-        .login-container {
-            background: #1e1e1e;
+        .auth-container {
+            background: #242526;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             width: 350px;
             text-align: center;
         }
-        .login-container h2 {
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2d88ff;
             margin-bottom: 20px;
-            color: #ffcc00;
+        }
+        .form-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        /* আধুনিক এরর মেসেজ বক্সের স্টাইল */
+        .error-banner {
+            background-color: #3e2723;
+            color: #ff8a80;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f44336;
+            display: none;
+            text-align: left;
         }
         .input-group {
             margin-bottom: 15px;
@@ -35,48 +53,63 @@
         }
         .input-group label {
             display: block;
+            font-size: 13px;
+            color: #b0b3b8;
             margin-bottom: 5px;
-            font-size: 14px;
-            color: #bbb;
         }
         .input-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #444;
-            background: #2b2b2b;
-            color: #fff;
-            border-radius: 5px;
+            padding: 12px;
+            background: #3a3b3c;
+            border: 1px solid #393a3b;
+            border-radius: 6px;
+            color: white;
+            font-size: 15px;
             box-sizing: border-box;
+        }
+        .input-group input:focus {
+            border-color: #2d88ff;
+            outline: none;
         }
         .btn {
             width: 100%;
-            padding: 10px;
-            background: #ffcc00;
+            background-color: #2d88ff;
+            color: white;
             border: none;
-            color: #121212;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
         }
         .btn:hover {
-            background: #e6b800;
+            background-color: #1a6fd8;
         }
         .switch-text {
-            margin-top: 15px;
-            font-size: 13px;
-            color: #888;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #b0b3b8;
             cursor: pointer;
         }
         .switch-text span {
-            color: #ffcc00;
+            color: #2d88ff;
+            font-weight: bold;
+        }
+        .switch-text span:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <h2 id="form-title">Sign In</h2>
+    <div class="auth-container">
+        <div class="logo">SocialVibe</div>
+        <div id="form-title" class="form-title">Sign In</div>
+
+        <!-- আধুনিক নোটিফিকেশন বক্স -->
+        <div id="error-message" class="error-banner"></div>
+
         <form id="auth-form">
             <div class="input-group" id="name-group" style="display: none;">
                 <label>Full Name</label>
@@ -92,22 +125,36 @@
             </div>
             <button type="submit" class="btn" id="submit-btn">Sign In</button>
         </form>
+
         <div class="switch-text" onclick="toggleForm()">
             <p id="toggle-msg">Don't have an account? <span>Sign Up</span></p>
         </div>
     </div>
 
     <script>
-        let isSignUp = false;
+        let isSignup = false;
+
+        // মডার্ন নোটিফিকেশন দেখানোর ফাংশন
+        function showError(message) {
+            const errorBox = document.getElementById("error-message");
+            errorBox.innerText = message;
+            errorBox.style.display = "block";
+            
+            // ৪ সেকেন্ড পর নিজে থেকে লুকিয়ে যাবে
+            setTimeout(() => {
+                errorBox.style.display = "none";
+            }, 4000);
+        }
 
         function toggleForm() {
-            isSignUp = !isSignUp;
-            document.getElementById("form-title").innerText = isSignUp ? "Create Account" : "Sign In";
-            document.getElementById("submit-btn").innerText = isSignUp ? "Sign Up" : "Sign In";
-            document.getElementById("name-group").style.display = isSignUp ? "block" : "none";
-            document.getElementById("toggle-msg").innerHTML = isSignUp ? 
+            isSignup = !isSignup;
+            document.getElementById("form-title").innerText = isSignup ? "Create Account" : "Sign In";
+            document.getElementById("submit-btn").innerText = isSignup ? "Sign Up" : "Sign In";
+            document.getElementById("name-group").style.display = isSignup ? "block" : "none";
+            document.getElementById("toggle-msg").innerHTML = isSignup ? 
                 "Already have an account? <span>Sign In</span>" : 
                 "Don't have an account? <span>Sign Up</span>";
+            document.getElementById("error-message").style.display = "none";
         }
 
         document.getElementById("auth-form").addEventListener("submit", function(e) {
@@ -117,21 +164,19 @@
 
             let users = JSON.parse(localStorage.getItem("allUsers")) || [];
 
-            if (isSignUp) {
+            if (isSignup) {
                 const fullname = document.getElementById("fullname").value.trim();
-                if(!fullname) {
-                    alert("দয়া করে আপনার পুরো নাম লিখুন!");
+                if (!fullname) {
+                    showError("দয়া করে আপনার পুরো নাম লিখুন!");
                     return;
                 }
 
-                // চেক করা ইউজার ইতিমধ্যে আছে কি না
                 const existingUser = users.find(u => u.username === username);
-                if(existingUser) {
-                    alert("এই ইউজারনেম দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে!");
+                if (existingUser) {
+                    showError("এই ইউজারনেম দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে!");
                     return;
                 }
 
-                // নতুন ইউজার অবজেক্ট তৈরি (সাথে ব্লক স্ট্যাটাস ফলস থাকবে)
                 const newUser = {
                     fullname: fullname,
                     username: username,
@@ -143,22 +188,18 @@
                 users.push(newUser);
                 localStorage.setItem("allUsers", JSON.stringify(users));
                 localStorage.setItem("currentUser", username);
-                alert("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!");
                 window.location.href = "home.html";
-
             } else {
-                // লগইন চেক
                 const user = users.find(u => u.username === username && u.password === password);
-                
-                if(user) {
-                    if(user.isBlocked) {
-                        alert("আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে!");
+                if (user) {
+                    if (user.isBlocked) {
+                        showError("আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে!");
                         return;
                     }
                     localStorage.setItem("currentUser", username);
                     window.location.href = "home.html";
                 } else {
-                    alert("ভুল ইউজারনেম বা পাসওয়ার্ড!");
+                    showError("ভুল ইউজারনেম বা পাসওয়ার্ড!");
                 }
             }
         });
