@@ -3,36 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lamp Login Animation</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Lamp Login & Profile System</title>
+    <style>
+        /* বেসিক স্টাইল এবং ল্যাম্প লগইন লেআউট */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+        .login-container {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 350px;
+            text-align: center;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #bbb;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            background: #2b2b2b;
+            color: #fff;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #ffcc00;
+            border: none;
+            color: #121212;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #e6b800;
+        }
+        .switch-text {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #888;
+            cursor: pointer;
+        }
+        .switch-text span {
+            color: #ffcc00;
+        }
+    </style>
 </head>
 <body>
-    <main class="room" id="room">
-        <!-- ল্যাম্প এবং রুমের লাইট ইফেক্ট -->
-        <div class="room-light" id="roomlight"></div>
-        <div class="fireflies"></div>
 
-        <!-- লগইন ফর্ম বক্স -->
-        <div class="login-container">
-            <h2>Welcome Back</h2>
-            <p>Enter your details to access your account</p>
-            
-            <form>
-                <div class="input-group">
-                    <input type="text" placeholder="Username" required>
-                </div>
-                <div class="input-group">
-                    <input type="email" placeholder="Email Address" required>
-                </div>
-                <div class="input-group">
-                    <input type="password" placeholder="Password" required>
-                </div>
-                
-                <button type="submit" class="sign-in-btn">Sign In</button>
-            </form>
+    <div class="login-container">
+        <h2 id="form-title">Sign In</h2>
+        <form id="auth-form">
+            <div class="input-group" id="name-group" style="display: none;">
+                <label>Full Name</label>
+                <input type="text" id="fullname" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+                <label>Username / Email</label>
+                <input type="text" id="username" placeholder="Enter username or email" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn" id="submit-btn">Sign In</button>
+        </form>
+        <div class="switch-text" onclick="toggleForm()">
+            <p id="toggle-msg">Don't have an account? <span>Sign Up</span></p>
         </div>
-    </main>
+    </div>
 
-    <script src="script.js"></script>
+    <script>
+        let isSignUp = false;
+
+        function toggleForm() {
+            isSignUp = !isSignUp;
+            document.getElementById("form-title").innerText = isSignUp ? "Create Account" : "Sign In";
+            document.getElementById("submit-btn").innerText = isSignUp ? "Sign Up" : "Sign In";
+            document.getElementById("name-group").style.display = isSignUp ? "block" : "none";
+            document.getElementById("toggle-msg").innerHTML = isSignUp ? 
+                "Already have an account? <span>Sign In</span>" : 
+                "Don't have an account? <span>Sign Up</span>";
+        }
+
+        document.getElementById("auth-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+
+            let users = JSON.parse(localStorage.getItem("allUsers")) || [];
+
+            if (isSignUp) {
+                const fullname = document.getElementById("fullname").value.trim();
+                if(!fullname) {
+                    alert("দয়া করে আপনার পুরো নাম লিখুন!");
+                    return;
+                }
+
+                // চেক করা ইউজার ইতিমধ্যে আছে কি না
+                const existingUser = users.find(u => u.username === username);
+                if(existingUser) {
+                    alert("এই ইউজারনেম দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে!");
+                    return;
+                }
+
+                // নতুন ইউজার অবজেক্ট তৈরি (সাথে ব্লক স্ট্যাটাস ফলস থাকবে)
+                const newUser = {
+                    fullname: fullname,
+                    username: username,
+                    password: password,
+                    bio: "Hey there! I am using this app.",
+                    isBlocked: false
+                };
+
+                users.push(newUser);
+                localStorage.setItem("allUsers", JSON.stringify(users));
+                localStorage.setItem("currentUser", username);
+                alert("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!");
+                window.location.href = "profile.html";
+
+            } else {
+                // লগইন চেক
+                const user = users.find(u => u.username === username && u.password === password);
+                
+                if(user) {
+                    if(user.isBlocked) {
+                        alert("আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে!");
+                        return;
+                    }
+                    localStorage.setItem("currentUser", username);
+                    window.location.href = "profile.html";
+                } else {
+                    alert("ভুল ইউজারনেম বা পাসওয়ার্ড!");
+                }
+            }
+        });
+    </script>
 </body>
 </html>
