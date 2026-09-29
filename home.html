@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialVibe - Home Feed</title>
-    <!-- Firebase App & Firestore CDN -->
+    <!-- Firebase App & Firestore & Storage CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
     <style>
         body {
@@ -73,7 +74,45 @@
             box-sizing: border-box;
             outline: none;
         }
-        .create-post button {
+        .post-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .btn-upload {
+            border: 2px solid #3a3b3c;
+            color: #b0b3b8;
+            background-color: #3a3b3c;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-name {
+            font-size: 12px;
+            color: #b0b3b8;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .create-post button.submit-post {
             background-color: #2d88ff;
             color: white;
             border: none;
@@ -82,7 +121,6 @@
             font-weight: bold;
             cursor: pointer;
             float: right;
-            margin-top: 10px;
         }
         .create-post button:hover {
             background-color: #1a6fd8;
@@ -110,104 +148,26 @@
             word-break: break-word;
             margin-bottom: 10px;
         }
+        .post-media-container {
+            margin-bottom: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: #3a3b3c;
+            display: none;
+        }
+        .post-media {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 400px;
+            object-fit: contain;
+        }
         .post-time {
             font-size: 12px;
             color: #b0b3b8;
             margin-bottom: 10px;
             border-bottom: 1px solid #393a3b;
             padding-bottom: 8px;
-        }
-        .post-actions {
-            display: flex;
-            justify-content: space-around;
-            padding: 5px 0;
-            border-bottom: 1px solid #393a3b;
-            margin-bottom: 10px;
-        }
-        .action-btn {
-            background: none;
-            border: none;
-            color: #b0b3b8;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .action-btn:hover {
-            color: #2d88ff;
-        }
-        .comments-section {
-            margin-top: 10px;
-        }
-        .comment-card {
-            background: #3a3b3c;
-            padding: 8px 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .comment-header {
-            font-weight: bold;
-            color: #2d88ff;
-            margin-bottom: 3px;
-        }
-        .comment-text {
-            color: #e4e6eb;
-            word-break: break-word;
-            margin-bottom: 5px;
-        }
-        .comment-footer-actions {
-            display: flex;
-            gap: 15px;
-            font-size: 11px;
-            color: #b0b3b8;
-        }
-        .comment-action-link {
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .comment-action-link:hover {
-            color: #2d88ff;
-            text-decoration: underline;
-        }
-        .reply-container {
-            margin-top: 6px;
-            margin-left: 15px;
-            border-left: 2px solid #2d88ff;
-            padding-left: 8px;
-        }
-        .reply-box {
-            font-size: 12px;
-            margin-bottom: 4px;
-            color: #d0d2d6;
-        }
-        .comment-input-container, .reply-input-container {
-            display: flex;
-            margin-top: 8px;
-            gap: 5px;
-        }
-        .comment-input, .reply-input {
-            flex: 1;
-            background: #3a3b3c;
-            border: 1px solid #4e4f50;
-            border-radius: 4px;
-            color: white;
-            padding: 6px 10px;
-            font-size: 13px;
-            outline: none;
-        }
-        .comment-btn, .reply-btn {
-            background: #2d88ff;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-        }
-        .reply-input-box {
-            display: none;
-            margin-top: 5px;
         }
         .feed-section {
             background: #242526;
@@ -231,7 +191,18 @@
     <div class="container">
         <div class="create-post clearfix">
             <textarea id="post-text" rows="3" placeholder="What's on your mind?"></textarea>
-            <button onclick="createPost()">Post</button>
+            
+            <div class="post-options">
+                <div class="upload-btn-wrapper">
+                    <button class="btn-upload">📸 Photo</button>
+                    <input type="file" id="media-file" accept="image/*,video/*" onchange="previewMedia()">
+                </div>
+                <span id="file-name" class="file-name">No media chosen</span>
+            </div>
+            
+            <div style="margin-top: 10px;">
+                 <button onclick="createPost()" class="submit-post">Post</button>
+            </div>
         </div>
 
         <div id="posts-container">
@@ -244,7 +215,7 @@
             apiKey: "AIzaSyB_44EQtMe4dZhNtKBo2YYKMpsUXKvOtdc",
             authDomain: "socialvibe-b0abb.firebaseapp.com",
             projectId: "socialvibe-b0abb",
-            storageBucket: "socialvibe-b0abb.firebasestorage.app",
+            storageBucket: "socialvibe-b0abb.appspot.com",
             messagingSenderId: "1086874408492",
             appId: "1:1086874408492:web:fdc1dd705b820d62c42389",
             measurementId: "G-E5399L9T5T"
@@ -252,6 +223,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const storage = firebase.storage();
 
         const currentUser = localStorage.getItem("currentUser");
         if (!currentUser) {
@@ -272,29 +244,61 @@
             window.location.href = "index.html";
         }
 
+        function previewMedia() {
+            const fileInput = document.getElementById('media-file');
+            const fileNameSpan = document.getElementById('file-name');
+            if (fileInput.files.length > 0) {
+                fileNameSpan.textContent = fileInput.files[0].name;
+            } else {
+                fileNameSpan.textContent = "No media chosen";
+            }
+        }
+
         function createPost() {
             const content = document.getElementById("post-text").value.trim();
-            if (!content) {
-                alert("দয়া করে কিছু লিখে তারপর পোস্ট করুন!");
+            const mediaFile = document.getElementById("media-file").files[0];
+            
+            if (!content && !mediaFile) {
+                alert("দয়া করে কিছু লিখে বা ছবি/ভিডিও সিলেক্ট করে পোস্ট করুন!");
                 return;
             }
 
+            if (mediaFile) {
+                const storageRef = storage.ref();
+                const mediaRef = storageRef.child('post_media/' + Date.now() + '_' + mediaFile.name);
+                
+                mediaRef.put(mediaFile).then((snapshot) => {
+                    snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        let mediaType = mediaFile.type.startsWith('video') ? 'video' : 'image';
+                        savePostToFirestore(content, downloadURL, mediaType);
+                    });
+                }).catch((error) => {
+                    alert("ফাইল আপলোড করতে সমস্যা হয়েছে: " + error.message);
+                });
+            } else {
+                savePostToFirestore(content, null, null);
+            }
+        }
+
+        function savePostToFirestore(content, mediaUrl, mediaType) {
             const now = new Date();
             const timeString = now.toLocaleDateString() + " at " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             db.collection("posts").add({
                 author: currentUser,
                 content: content,
+                mediaUrl: mediaUrl,
+                mediaType: mediaType, // 'image' or 'video'
                 createdAt: timeString,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                likes: [],
-                comments: []
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
                 document.getElementById("post-text").value = "";
+                document.getElementById("media-file").value = "";
+                document.getElementById("file-name").textContent = "No media chosen";
             })
             .catch((error) => {
-                alert("পোস্ট করতে সমস্যা হয়েছে: " + error.message);
+                alert("পোস্ট সেভ করতে সমস্যা হয়েছে: " + error.message);
             });
         }
 
@@ -306,7 +310,7 @@
                     container.innerHTML = `
                         <div class="feed-section">
                             <h3>Welcome to SocialVibe!</h3>
-                            <p>আপনার পেজে এই মুহূর্তে কোনো পোস্ট নেই। উপরের বক্সে কিছু লিখে আপনার প্রথম পোস্টটি শেয়ার করুন!</p>
+                            <p>আপনার পেজে এই মুহূর্তে কোনো পোস্ট নেই। প্রথম পোস্ট বা ভিডিও শেয়ার করুন!</p>
                         </div>
                     `;
                     return;
@@ -323,188 +327,34 @@
                         deleteBtn = `<button onclick="deletePost(${safePostId})" style="background:none; border:none; color:#f44336; float:right; cursor:pointer; font-weight:bold;">Delete</button>`;
                     }
 
-                    // Likes handling
-                    let likes = post.likes || [];
-                    let isLiked = likes.includes(currentUser);
-                    let likeBtnColor = isLiked ? "#2d88ff" : "#b0b3b8";
-                    let likeText = isLiked ? "Liked (" + likes.length + ")" : "Like (" + likes.length + ")";
-
-                    // Comments handling
-                    let comments = post.comments || [];
-                    let commentsHtml = "";
-                    
-                    comments.forEach((c, index) => {
-                        let cLikes = c.likes || [];
-                        let isCLiked = cLikes.includes(currentUser);
-                        let cLikeColor = isCLiked ? "#2d88ff" : "#b0b3b8";
-                        let cLikeText = isCLiked ? `Liked (${cLikes.length})` : `Like (${cLikes.length})`;
-                        
-                        let replies = c.replies || [];
-                        let repliesHtml = "";
-                        replies.forEach(r => {
-                            repliesHtml += `<div class="reply-box"><b>@${r.user}:</b> ${r.text}</div>`;
-                        });
-
-                        let safePostId = "'" + postId + "'";
-                        let commentIndex = index;
-
-                        commentsHtml += `
-                            <div class="comment-card">
-                                <div class="comment-header">@${c.user}</div>
-                                <div class="comment-text">${c.text}</div>
-                                <div class="comment-footer-actions">
-                                    <span class="comment-action-link" style="color: ${cLikeColor};" onclick="toggleCommentLike('${postId}', ${commentIndex})">${cLikeText}</span>
-                                    <span class="comment-action-link" onclick="toggleReplyBox('${postId}-${commentIndex}')">Reply</span>
+                    let mediaHtml = "";
+                    if (post.mediaUrl) {
+                        if (post.mediaType === 'video') {
+                            mediaHtml = `
+                                <div class="post-media-container" style="display: block;">
+                                    <video src="${post.mediaUrl}" class="post-media" controls></video>
                                 </div>
-                                <div class="reply-container">
-                                    ${repliesHtml}
-                                    <div id="reply-box-${postId}-${commentIndex}" class="reply-input-box">
-                                        <div class="reply-input-container">
-                                            <input type="text" id="reply-input-${postId}-${commentIndex}" class="reply-input" placeholder="Write a reply...">
-                                            <button class="reply-btn" onclick="addReply('${postId}', ${commentIndex})">Reply</button>
-                                        </div>
-                                    </div>
+                            `;
+                        } else {
+                            mediaHtml = `
+                                <div class="post-media-container" style="display: block;">
+                                    <img src="${post.mediaUrl}" alt="Post Image" class="post-media">
                                 </div>
-                            </div>
-                        `;
-                    });
-
-                    let safeId = "'" + postId + "'";
+                            `;
+                        }
+                    }
 
                     html += `
                         <div class="post-card">
                             <div class="post-author">@${post.author || 'Anonymous'} ${deleteBtn}</div>
                             <div class="post-content">${post.content}</div>
+                            ${mediaHtml}
                             <div class="post-time">${post.createdAt || ''}</div>
-                            
-                            <div class="post-actions">
-                                <button class="action-btn" style="color: ${likeBtnColor};" onclick="toggleLike(${safeId})">👍 ${likeText}</button>
-                                <button class="action-btn">💬 Comments (${comments.length})</button>
-                            </div>
-
-                            <div class="comments-section">
-                                ${commentsHtml}
-                                <div class="comment-input-container">
-                                    <input type="text" id="comment-input-${postId}" class="comment-input" placeholder="Write a comment...">
-                                    <button class="comment-btn" onclick="addComment(${safeId})">Send</button>
-                                </div>
-                            </div>
                         </div>
                     `;
                 });
 
                 container.innerHTML = html;
-            });
-        }
-
-        function toggleLike(postId) {
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let likes = postData.likes || [];
-                    
-                    if (likes.includes(currentUser)) {
-                        likes = likes.filter(user => user !== currentUser);
-                    } else {
-                        likes.push(currentUser);
-                    }
-                    transaction.update(postRef, { likes: likes });
-                });
-            }).catch((error) => {
-                console.log("Like error: ", error);
-            });
-        }
-
-        function addComment(postId) {
-            const inputField = document.getElementById(`comment-input-${postId}`);
-            const commentText = inputField.value.trim();
-            if (!commentText) return;
-
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let comments = postData.comments || [];
-                    
-                    comments.push({
-                        user: currentUser,
-                        text: commentText,
-                        likes: [],
-                        replies: []
-                    });
-
-                    transaction.update(postRef, { comments: comments });
-                });
-            }).then(() => {
-                inputField.value = "";
-            }).catch((error) => {
-                console.log("Comment error: ", error);
-            });
-        }
-
-        function toggleCommentLike(postId, commentIndex) {
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let comments = postData.comments || [];
-                    
-                    if (comments[commentIndex]) {
-                        let cLikes = comments[commentIndex].likes || [];
-                        if (cLikes.includes(currentUser)) {
-                            cLikes = cLikes.filter(user => user !== currentUser);
-                        } else {
-                            cLikes.push(currentUser);
-                        }
-                        comments[commentIndex].likes = cLikes;
-                        transaction.update(postRef, { comments: comments });
-                    }
-                });
-            }).catch((error) => {
-                console.log("Comment like error: ", error);
-            });
-        }
-
-        function toggleReplyBox(boxId) {
-            const box = document.getElementById(`reply-box-${boxId}`);
-            if (box.style.display === "block") {
-                box.style.display = "none";
-            } else {
-                box.style.display = "block";
-            }
-        }
-
-        function addReply(postId, commentIndex) {
-            const inputField = document.getElementById(`reply-input-${postId}-${commentIndex}`);
-            const replyText = inputField.value.trim();
-            if (!replyText) return;
-
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let comments = postData.comments || [];
-                    
-                    if (comments[commentIndex]) {
-                        if (!comments[commentIndex].replies) {
-                            comments[commentIndex].replies = [];
-                        }
-                        comments[commentIndex].replies.push({
-                            user: currentUser,
-                            text: replyText
-                        });
-                        transaction.update(postRef, { comments: comments });
-                    }
-                });
-            }).then(() => {
-                inputField.value = "";
-            }).catch((error) => {
-                console.log("Reply error: ", error);
             });
         }
 
