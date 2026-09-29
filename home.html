@@ -1,574 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Vibe</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-    <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --surface-color: #ffffff;
-            --text-color: #050505;
-            --text-secondary: #65676b;
-            --border-color: #ced0d4;
-            --primary-color: #1877f2;
-            --hover-color: #f2f2f2;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #18191a;
-            --surface-color: #242526;
-            --text-color: #e4e6eb;
-            --text-secondary: #b0b3b8;
-            --border-color: #393a3b;
-            --primary-color: #2d88ff;
-            --hover-color: #3a3b3c;
-        }
-
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.2s, color 0.2s; }
-        body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); }
-        
-        /* Auth Page Styling */
-        .auth-container { max-width: 400px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; background: var(--surface-color); }
-        .auth-top-content { width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .lang-select { color: var(--text-secondary); font-size: 12px; margin-bottom: 25px; margin-top: 10px; }
-        
-        /* Custom Text-Based Logo Styling */
-        .auth-logo-box { margin-bottom: 30px; text-align: center; }
-        .logo-text-main { font-family: 'Poppins', sans-serif; font-size: 36px; font-weight: 800; background: linear-gradient(135deg, #1877f2, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; margin: 0; }
-        .logo-text-sub { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-
-        .auth-form-group { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-        .auth-input-field { width: 100%; padding: 14px 16px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; outline: none; color: var(--text-color); }
-        .auth-input-field:focus { border-color: var(--primary-color); background: var(--surface-color); }
-        
-        .auth-main-btn { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 24px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 4px; }
-        .auth-forgot-link { margin-top: 15px; font-size: 14px; color: var(--text-color); text-decoration: none; font-weight: 500; }
-        
-        .auth-footer-box { width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; gap: 15px; }
-        .auth-create-btn { width: 100%; padding: 14px; background: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); border-radius: 24px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
-        
-        /* Developer & App Branding */
-        .developer-branding { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
-        .app-brand-title { font-weight: bold; color: var(--text-color); font-size: 14px; }
-        .developer-name { font-size: 12px; color: var(--text-secondary); }
-
-        /* App Layout */
-        #app-container { display: none; min-height: 100vh; }
-        .navbar { background-color: var(--surface-color); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; height: 56px; }
-        .nav-logo { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; background: linear-gradient(135deg, #1877f2, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
-        .nav-right { display: flex; align-items: center; gap: 8px; }
-        .nav-icon-btn { background-color: var(--hover-color); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-color); cursor: pointer; font-size: 18px; }
-
-        .search-box-header { display: flex; align-items: center; background: var(--bg-color); border-radius: 20px; padding: 6px 12px; gap: 8px; border: 1px solid var(--border-color); }
-        .search-box-header input { background: transparent; border: none; color: var(--text-color); outline: none; font-size: 14px; width: 110px; }
-
-        .container { max-width: 680px; margin: 0 auto; padding-bottom: 80px; }
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-
-        .create-post-box { background-color: var(--surface-color); margin: 12px 16px; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .post-input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .user-avatar-small { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; background-size: cover; background-position: center; }
-        .post-textarea { width: 100%; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 16px; color: var(--text-color); font-size: 15px; resize: none; outline: none; }
-        .post-actions-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; }
-        .upload-label { background-color: var(--hover-color); color: var(--text-color); padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
-        .post-submit-btn { background-color: var(--primary-color); color: white; border: none; padding: 6px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-
-        .feed-container { padding: 0 16px; }
-        .post-card { background-color: var(--surface-color); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 12px; padding: 14px; }
-        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .post-author-name { font-weight: 600; font-size: 15px; color: var(--text-color); display: flex; align-items: center; gap: 8px; }
-        .post-time-text { font-size: 11px; color: var(--text-secondary); }
-        .post-body-text { font-size: 15px; line-height: 1.5; color: var(--text-color); margin-bottom: 10px; word-break: break-word; }
-        .post-media-box { border-radius: 8px; overflow: hidden; background-color: var(--bg-color); margin-bottom: 10px; }
-        .post-media-content { width: 100%; max-height: 450px; object-fit: contain; display: block; }
-        .empty-feed { background-color: var(--surface-color); padding: 40px 20px; border-radius: 12px; text-align: center; color: var(--text-secondary); border: 1px solid var(--border-color); margin-top: 12px; }
-
-        /* Profile Layout */
-        .profile-cover { width: 100%; height: 200px; background: linear-gradient(135deg, #1e3c72, #2a5298); background-size: cover; background-position: center; position: relative; }
-        .profile-details { padding: 0 16px 20px 16px; text-align: center; position: relative; border-bottom: 1px solid var(--border-color); background: var(--surface-color); }
-        .profile-avatar-large { width: 130px; height: 130px; margin: -70px auto 10px auto; border-radius: 50%; border: 4px solid var(--surface-color); background-color: var(--primary-color); color: white; font-size: 50px; font-weight: bold; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .profile-bio-box { text-align: left; background: var(--bg-color); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 14px; border: 1px solid var(--border-color); }
-        .profile-bio-box p { margin: 5px 0; color: var(--text-color); }
-        
-        .edit-profile-box { background: var(--bg-color); padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left; border: 1px solid var(--border-color); display: none; }
-        .edit-profile-box input, .edit-profile-box textarea { width: 100%; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color); padding: 10px; margin-bottom: 10px; outline: none; }
-        .edit-profile-box label { font-size: 12px; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 4px; }
-
-        /* Settings View Panel */
-        .settings-container { padding: 16px; background: var(--bg-color); min-height: 100vh; }
-        .settings-section-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin: 16px 0 8px 8px; letter-spacing: 0.5px; }
-        .settings-card { background: var(--surface-color); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 16px; }
-        .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; color: var(--text-color); font-weight: 500; font-size: 15px; background: var(--surface-color); }
-        .settings-item:last-child { border-bottom: none; }
-        .settings-item:hover { background-color: var(--hover-color); }
-        .settings-item-left { display: flex; align-items: center; gap: 12px; }
-        .settings-icon { font-size: 20px; width: 32px; text-align: center; }
-
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--surface-color); display: flex; justify-content: space-around; border-top: 1px solid var(--border-color); height: 50px; z-index: 1000; }
-        .bottom-nav-item { color: var(--text-secondary); font-size: 20px; cursor: pointer; text-align: center; flex: 1; background: none; border: none; display: flex; align-items: center; justify-content: center; position: relative; }
-        .bottom-nav-item.active { color: var(--primary-color); }
-        .bottom-nav-item.active::after { content: ''; position: absolute; bottom: 0; width: 100%; height: 3px; background-color: var(--primary-color); border-radius: 3px 3px 0 0; }
-
-        .dropdown-menu { position: absolute; top: 60px; right: 16px; width: 240px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; padding: 8px; z-index: 1100; }
-        .dropdown-item { padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: var(--text-color); font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; }
-        .dropdown-item:hover { background-color: var(--hover-color); }
-    </style>
-</head>
-<body data-theme="light">
-
-    <!-- AUTH SECTION -->
-    <div id="auth-section" class="auth-container">
-        <div class="auth-top-content">
-            <div class="lang-select">English (US)</div>
-            
-            <!-- সুন্দর টাইপোগ্রাফি লোগো -->
-            <div class="auth-logo-box">
-                <h1 class="logo-text-main">Social Vibe</h1>
-                <div class="logo-text-sub">Connect & Share</div>
-            </div>
-
-            <form id="auth-form" class="auth-form-group" onsubmit="handleAuth(event)">
-                <input type="text" id="auth-identifier" class="auth-input-field" placeholder="Mobile number or email" required>
-                <input type="password" id="auth-password" class="auth-input-field" placeholder="Password" required>
-                <button type="submit" class="auth-main-btn" id="auth-submit-btn">Log in</button>
-            </form>
-            <a href="#" onclick="forgotPassword()" class="auth-forgot-link">Forgot password?</a>
+<!-- MAIN APP CONTAINER -->
+<div id="app-container">
+    <div class="navbar">
+        <div class="nav-logo" onclick="switchTab('home')">Social Vibe</div>
+        <div class="search-box-header">
+            <span>🔍</span>
+            <input type="text" id="search-input" placeholder="Search..." oninput="searchUsersAndPosts(this.value)">
         </div>
-        
-        <div class="auth-footer-box">
-            <button type="button" class="auth-create-btn" onclick="toggleAuthMode()" id="switch-text-action">Create new account</button>
-            
-            <!-- ডেভেলপার ইনফো -->
-            <div class="developer-branding">
-                <span class="app-brand-title">Social Vibe</span>
-                <span class="developer-name">Developed by Junied Hossain</span>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="switchTab('profile')" title="Profile">👤</button>
+            <button class="nav-icon-btn" onclick="toggleMenuDropdown()" title="Menu">☰</button>
+        </div>
+    </div>
+
+    <div id="dropdown-menu" class="dropdown-menu">
+        <div class="dropdown-item" onclick="switchTab('profile'); toggleMenuDropdown();">👤 আমার প্রোফাইল</div>
+        <div class="dropdown-item" onclick="switchTab('settings'); toggleMenuDropdown();">⚙️ সেটিংস (Settings)</div>
+        <div class="dropdown-item" onclick="logout()" style="color: #ff5252;">🚪 লগআউট</div>
+    </div>
+
+    <div class="container">
+        <!-- HOME TAB -->
+        <div id="tab-home" class="view-section active">
+            <div class="create-post-box">
+                <div class="post-input-row">
+                    <div id="user-initial" class="user-avatar-small">U</div>
+                    <textarea id="post-text" class="post-textarea" rows="2" placeholder="What's on your mind?"></textarea>
+                </div>
+                <div class="post-actions-row">
+                    <label class="upload-label">
+                        📷 Photo/Video
+                        <input type="file" id="media-file" accept="image/*,video/*" style="display: none;" onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'No file chosen'">
+                    </label>
+                    <span id="file-name" style="font-size:12px; color:var(--text-secondary);">No file chosen</span>
+                    <button class="post-submit-btn" onclick="createPost()">Post</button>
+                </div>
+            </div>
+            <div class="feed-container" id="feed-container">
+                <div class="empty-feed"><p>কনটেন্ট লোড হচ্ছে...</p></div>
+            </div>
+        </div>
+
+        <!-- VIDEOS TAB -->
+        <div id="tab-videos" class="view-section">
+            <div class="feed-container" id="video-feed-container" style="margin-top: 15px;">
+                <div class="empty-feed"><p>কোনো ভিডিও কনটেন্ট নেই।</p></div>
+            </div>
+        </div>
+
+        <!-- FRIENDS TAB -->
+        <div id="tab-friends" class="view-section">
+            <div class="feed-container" id="friends-list-container" style="margin-top: 15px;">
+                <h3 style="margin-bottom: 10px;">People You May Know</h3>
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="tab-settings" class="view-section">
+            <div class="settings-container">
+                <h2 style="margin: 0 0 10px 4px; font-size: 24px;">Settings & privacy</h2>
+                
+                <div class="settings-section-title">Preferences</div>
+                <div class="settings-card">
+                    <div class="settings-item" onclick="toggleDarkMode()">
+                        <div class="settings-item-left"><span class="settings-icon">🌙</span> Dark mode</div>
+                        <span id="dark-mode-status" style="font-size: 14px; color: var(--text-secondary);">Off</span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Language preferences opened!')">
+                        <div class="settings-item-left"><span class="settings-icon">🌐</span> Language</div>
+                        <span style="font-size: 14px; color: var(--text-secondary);">English (US)</span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Time management opened!')">
+                        <div class="settings-item-left"><span class="settings-icon">⏱️</span> Time management</div>
+                        <span>›</span>
+                    </div>
+                </div>
+
+                <div class="settings-section-title">Your account</div>
+                <div class="settings-card">
+                    <div class="settings-item" onclick="alert('Personal details opened!')">
+                        <div class="settings-item-left"><span class="settings-icon">👤</span> Personal details</div>
+                        <span>›</span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Password and security opened!')">
+                        <div class="settings-item-left"><span class="settings-icon">🔒</span> Password and security</div>
+                        <span>›</span>
+                    </div>
+                </div>
+
+                <div class="settings-section-title">Privacy</div>
+                <div class="settings-card">
+                    <div class="settings-item" onclick="alert('Privacy Center opened!')">
+                        <div class="settings-item-left"><span class="settings-icon">🛡️</span> Privacy Center</div>
+                        <span>›</span>
+                    </div>
+                    <div class="settings-item" onclick="alert('Profile locking opened!')">
+                        <div class="settings-item-left"><span class="settings-icon">🔒</span> Profile locking</div>
+                        <span>›</span>
+                    </div>
+                </div>
+
+                <div class="settings-section-title">Login</div>
+                <div class="settings-card">
+                    <div class="settings-item" onclick="logout()" style="color: #ff5252;">
+                        <div class="settings-item-left"><span class="settings-icon">🚪</span> Log out</div>
+                        <span>›</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="tab-profile" class="view-section">
+            <div id="profile-cover-elem" class="profile-cover"></div>
+            <div class="profile-details">
+                <div id="profile-avatar" class="profile-avatar-large">U</div>
+                <h2 id="profile-name" style="margin: 5px 0 2px 0;">User Name</h2>
+                <p id="profile-username" style="color:var(--text-secondary); margin:0 0 10px 0;">@username</p>
+                
+                <div class="profile-bio-box">
+                    <p id="profile-bio"><b>Bio:</b> Social Vibe Member</p>
+                    <p id="profile-edu"><b>পড়াশোনা:</b> উল্লেখ করা হয়নি</p>
+                    <p id="profile-work"><b>কর্মক্ষেত্র:</b> উল্লেখ করা হয়নি</p>
+                    <p id="profile-blood"><b>রক্তের গ্রুপ:</b> উল্লেখ করা হয়নি</p>
+                </div>
+
+                <button class="post-submit-btn" style="margin-top: 12px;" onclick="toggleEditProfile()">✏️ Edit Profile & Details</button>
+
+                <div id="edit-box" class="edit-profile-box">
+                    <label>Full Name:</label>
+                    <input type="text" id="input-name">
+                    <label>Username:</label>
+                    <input type="text" id="input-username">
+                    <label>Bio:</label>
+                    <textarea id="input-bio" rows="2"></textarea>
+                    <label>পড়াশোনা (Education):</label>
+                    <input type="text" id="input-edu">
+                    <label>কর্মক্ষেত্র (Workplace):</label>
+                    <input type="text" id="input-work">
+                    <label>রক্তের গ্রুপ (Blood Group):</label>
+                    <input type="text" id="input-blood">
+                    <button class="post-submit-btn" onclick="saveProfile()">Save Changes</button>
+                </div>
+            </div>
+            <div class="feed-container" id="user-posts-container" style="margin-top: 12px;">
+                <div class="empty-feed"><p>আপনার কোনো পোস্ট নেই।</p></div>
             </div>
         </div>
     </div>
 
-    <!-- MAIN APP CONTAINER -->
-    <div id="app-container">
-        <div class="navbar">
-            <div class="nav-logo" onclick="switchTab('home')">Social Vibe</div>
-            <div class="search-box-header">
-                <span>🔍</span>
-                <input type="text" id="search-input" placeholder="Search..." oninput="searchUsersAndPosts(this.value)">
-            </div>
-            <div class="nav-right">
-                <button class="nav-icon-btn" onclick="switchTab('profile')" title="Profile">👤</button>
-                <button class="nav-icon-btn" onclick="toggleMenuDropdown()" title="Menu">☰</button>
-            </div>
-        </div>
-
-        <div id="dropdown-menu" class="dropdown-menu">
-            <div class="dropdown-item" onclick="switchTab('profile'); toggleMenuDropdown();">👤 আমার প্রোফাইল</div>
-            <div class="dropdown-item" onclick="switchTab('settings'); toggleMenuDropdown();">⚙️ সেটিংস (Settings)</div>
-            <div class="dropdown-item" onclick="logout()" style="color: #ff5252;">🚪 লগআউট</div>
-        </div>
-
-        <div class="container">
-            <!-- 1. HOME TAB -->
-            <div id="tab-home" class="view-section active">
-                <div class="create-post-box">
-                    <div class="post-input-row">
-                        <div id="user-initial" class="user-avatar-small">U</div>
-                        <textarea id="post-text" class="post-textarea" rows="2" placeholder="What's on your mind?"></textarea>
-                    </div>
-                    <div class="post-actions-row">
-                        <label class="upload-label">
-                            📷 Photo/Video
-                            <input type="file" id="media-file" accept="image/*,video/*" style="display: none;" onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'No file chosen'">
-                        </label>
-                        <span id="file-name" style="font-size:12px; color:var(--text-secondary);">No file chosen</span>
-                        <button class="post-submit-btn" onclick="createPost()">Post</button>
-                    </div>
-                </div>
-                <div class="feed-container" id="feed-container">
-                    <div class="empty-feed"><p>কনটেন্ট লোড হচ্ছে...</p></div>
-                </div>
-            </div>
-
-            <!-- 2. VIDEOS TAB -->
-            <div id="tab-videos" class="view-section">
-                <div class="feed-container" id="video-feed-container" style="margin-top: 15px;">
-                    <div class="empty-feed"><p>কোনো ভিডিও কনটেন্ট নেই।</p></div>
-                </div>
-            </div>
-
-            <!-- 3. FRIENDS TAB -->
-            <div id="tab-friends" class="view-section">
-                <div class="feed-container" id="friends-list-container" style="margin-top: 15px;">
-                    <h3 style="margin-bottom: 10px;">People You May Know</h3>
-                </div>
-            </div>
-
-            <!-- 4. SETTINGS TAB -->
-            <div id="tab-settings" class="view-section">
-                <div class="settings-container">
-                    <h2 style="margin: 0 0 10px 4px; font-size: 24px;">Settings & privacy</h2>
-                    
-                    <div class="settings-section-title">Preferences</div>
-                    <div class="settings-card">
-                        <div class="settings-item" onclick="toggleDarkMode()">
-                            <div class="settings-item-left"><span class="settings-icon">🌙</span> Dark mode</div>
-                            <span id="dark-mode-status" style="font-size: 14px; color: var(--text-secondary);">Off</span>
-                        </div>
-                        <div class="settings-item" onclick="alert('Language preferences opened!')">
-                            <div class="settings-item-left"><span class="settings-icon">🌐</span> Language</div>
-                            <span style="font-size: 14px; color: var(--text-secondary);">English (US)</span>
-                        </div>
-                        <div class="settings-item" onclick="alert('Time management opened!')">
-                            <div class="settings-item-left"><span class="settings-icon">⏱️</span> Time management</div>
-                            <span>›</span>
-                        </div>
-                    </div>
-
-                    <div class="settings-section-title">Your account</div>
-                    <div class="settings-card">
-                        <div class="settings-item" onclick="alert('Personal details opened!')">
-                            <div class="settings-item-left"><span class="settings-icon">👤</span> Personal details</div>
-                            <span>›</span>
-                        </div>
-                        <div class="settings-item" onclick="alert('Password and security opened!')">
-                            <div class="settings-item-left"><span class="settings-icon">🔒</span> Password and security</div>
-                            <span>›</span>
-                        </div>
-                    </div>
-
-                    <div class="settings-section-title">Privacy</div>
-                    <div class="settings-card">
-                        <div class="settings-item" onclick="alert('Privacy Center opened!')">
-                            <div class="settings-item-left"><span class="settings-icon">🛡️</span> Privacy Center</div>
-                            <span>›</span>
-                        </div>
-                        <div class="settings-item" onclick="alert('Profile locking opened!')">
-                            <div class="settings-item-left"><span class="settings-icon">🔒</span> Profile locking</div>
-                            <span>›</span>
-                        </div>
-                    </div>
-
-                    <div class="settings-section-title">Login</div>
-                    <div class="settings-card">
-                        <div class="settings-item" onclick="logout()" style="color: #ff5252;">
-                            <div class="settings-item-left"><span class="settings-icon">🚪</span> Log out</div>
-                            <span>›</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. PROFILE TAB -->
-            <div id="tab-profile" class="view-section">
-                <div id="profile-cover-elem" class="profile-cover"></div>
-                <div class="profile-details">
-                    <div id="profile-avatar" class="profile-avatar-large">U</div>
-                    <h2 id="profile-name" style="margin: 5px 0 2px 0;">User Name</h2>
-                    <p id="profile-username" style="color:var(--text-secondary); margin:0 0 10px 0;">@username</p>
-                    
-                    <div class="profile-bio-box">
-                        <p id="profile-bio"><b>Bio:</b> Social Vibe Member</p>
-                        <p id="profile-edu"><b>পড়াশোনা:</b> উল্লেখ করা হয়নি</p>
-                        <p id="profile-work"><b>কর্মক্ষেত্র:</b> উল্লেখ করা হয়নি</p>
-                        <p id="profile-blood"><b>রক্তের গ্রুপ:</b> উল্লেখ করা হয়নি</p>
-                    </div>
-
-                    <button class="post-submit-btn" style="margin-top: 12px;" onclick="toggleEditProfile()">✏️ Edit Profile & Details</button>
-
-                    <div id="edit-box" class="edit-profile-box">
-                        <label>Full Name:</label>
-                        <input type="text" id="input-name">
-                        <label>Username:</label>
-                        <input type="text" id="input-username">
-                        <label>Bio:</label>
-                        <textarea id="input-bio" rows="2"></textarea>
-                        <label>পড়াশোনা (Education):</label>
-                        <input type="text" id="input-edu">
-                        <label>কর্মক্ষেত্র (Workplace):</label>
-                        <input type="text" id="input-work">
-                        <label>রক্তের গ্রুপ (Blood Group):</label>
-                        <input type="text" id="input-blood">
-                        <button class="post-submit-btn" onclick="saveProfile()">Save Changes</button>
-                    </div>
-                </div>
-                <div class="feed-container" id="user-posts-container" style="margin-top: 12px;">
-                    <div class="empty-feed"><p>আপনার কোনো পোস্ট নেই।</p></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bottom-nav">
-            <button class="bottom-nav-item active" onclick="switchTab('home')">🏠</button>
-            <button class="bottom-nav-item" onclick="switchTab('videos')">📺</button>
-            <button class="bottom-nav-item" onclick="switchTab('friends')">👥</button>
-            <button class="bottom-nav-item" onclick="switchTab('settings')">⚙️</button>
-            <button class="bottom-nav-item" onclick="switchTab('profile')">☰</button>
-        </div>
+    <div class="bottom-nav">
+        <button class="bottom-nav-item active" onclick="switchTab('home')">🏠</button>
+        <button class="bottom-nav-item" onclick="switchTab('videos')">📺</button>
+        <button class="bottom-nav-item" onclick="switchTab('friends')">👥</button>
+        <button class="bottom-nav-item" onclick="switchTab('settings')">⚙️</button>
+        <button class="bottom-nav-item" onclick="switchTab('profile')">☰</button>
     </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyB_44EQtMe4dZhNtKBo2YYKMpsUXKvOtdc",
-            authDomain: "socialvibe-b0abb.firebaseapp.com",
-            projectId: "socialvibe-b0abb",
-            storageBucket: "socialvibe-b0abb.appspot.com",
-            messagingSenderId: "1086874408492",
-            appId: "1:1086874408492:web:fdc1dd705b820d62c42389",
-            measurementId: "G-E5399L9T5T"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        let isSignUp = false;
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                document.getElementById("auth-section").style.display = "none";
-                document.getElementById("app-container").style.display = "block";
-                let identifier = user.email || "User";
-                document.getElementById("user-initial").textContent = identifier.charAt(0).toUpperCase();
-                loadFeed();
-                loadProfileData();
-                loadUserPosts();
-                loadAllUsers();
-            } else {
-                document.getElementById("auth-section").style.display = "flex";
-                document.getElementById("app-container").style.display = "none";
-            }
-        });
-
-        function toggleAuthMode() {
-            isSignUp = !isSignUp;
-            document.getElementById("auth-submit-btn").textContent = isSignUp ? "Sign Up" : "Log in";
-            document.getElementById("switch-text-action").textContent = isSignUp ? "Already have an account? Log in" : "Create new account";
-        }
-
-        function handleAuth(event) {
-            event.preventDefault();
-            const identifier = document.getElementById("auth-identifier").value.trim();
-            const password = document.getElementById("auth-password").value.trim();
-
-            if (isSignUp) {
-                auth.createUserWithEmailAndPassword(identifier, password).then(() => {
-                    alert("একাউন্ট সফলভাবে তৈরি হয়েছে!");
-                }).catch(err => alert("ত্রুটি: " + err.message));
-            } else {
-                auth.signInWithEmailAndPassword(identifier, password).then(() => {
-                    alert("লগইন সফল হয়েছে!");
-                }).catch(err => alert("ত্রুটি: " + err.message));
-            }
-        }
-
-        function forgotPassword() {
-            const identifier = document.getElementById("auth-identifier").value.trim();
-            if (!identifier) return alert("প্রথমে ইমেইল বা ফোন নাম্বার ফিল্ডে আপনার ইমেইল দিন!");
-            auth.sendPasswordResetEmail(identifier).then(() => alert("পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!")).catch(err => alert("ত্রুটি: " + err.message));
-        }
-
-        function logout() { auth.signOut(); }
-        
-        function toggleMenuDropdown() {
-            const m = document.getElementById("dropdown-menu");
-            m.style.display = m.style.display === "block" ? "none" : "block";
-        }
-
-        function toggleDarkMode() {
-            const body = document.body;
-            const status = document.getElementById("dark-mode-status");
-            if (body.getAttribute("data-theme") === "dark") {
-                body.setAttribute("data-theme", "light");
-                status.textContent = "Off";
-            } else {
-                body.setAttribute("data-theme", "dark");
-                status.textContent = "On";
-            }
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById("dropdown-menu").style.display = "none";
-            const tabs = {'home': 0, 'videos': 1, 'friends': 2, 'settings': 3, 'profile': 4};
-            if(tabs[tabName] !== undefined) {
-                document.getElementById('tab-' + tabName).classList.add('active');
-                document.querySelectorAll('.bottom-nav-item')[tabs[tabName]].classList.add('active');
-            }
-            window.scrollTo(0, 0);
-        }
-
-        function toggleEditProfile() {
-            const box = document.getElementById("edit-box");
-            box.style.display = box.style.display === "block" ? "none" : "block";
-        }
-
-        function loadProfileData() {
-            const user = auth.currentUser;
-            if (!user) return;
-            db.collection("users").doc(user.uid).get().then((doc) => {
-                let name = user.email ? user.email.split('@')[0] : "User";
-                let username = name;
-                let bio = "Social Vibe Member";
-                let edu = "উল্লেখ করা হয়নি", work = "উল্লেখ করা হয়নি", blood = "উল্লেখ করা হয়নি", cover = "";
-
-                if (doc.exists) {
-                    let d = doc.data();
-                    if (d.name) name = d.name;
-                    if (d.username) username = d.username;
-                    if (d.bio) bio = d.bio;
-                    if (d.edu) edu = d.edu;
-                    if (d.work) work = d.work;
-                    if (d.blood) blood = d.blood;
-                    if (d.cover) cover = d.cover;
-                }
-
-                document.getElementById("profile-name").textContent = name;
-                document.getElementById("profile-username").textContent = "@" + username;
-                document.getElementById("profile-bio").innerHTML = `<b>Bio:</b> ${bio}`;
-                document.getElementById("profile-edu").innerHTML = `<b>পড়াশোনা:</b> ${edu}`;
-                document.getElementById("profile-work").innerHTML = `<b>কর্মক্ষেত্র:</b> ${work}`;
-                document.getElementById("profile-blood").innerHTML = `<b>রক্তের গ্রুপ:</b> ${blood}`;
-                document.getElementById("profile-avatar").textContent = name.charAt(0).toUpperCase();
-
-                if(cover) {
-                    document.getElementById("profile-cover-elem").style.backgroundImage = `url('${cover}')`;
-                }
-
-                document.getElementById("input-name").value = name;
-                document.getElementById("input-username").value = username;
-                document.getElementById("input-bio").value = bio;
-                document.getElementById("input-edu").value = edu;
-                document.getElementById("input-work").value = work;
-                document.getElementById("input-blood").value = blood;
-            });
-        }
-
-        function saveProfile() {
-            const user = auth.currentUser;
-            if (!user) return;
-            db.collection("users").doc(user.uid).set({
-                name: document.getElementById("input-name").value.trim(),
-                username: document.getElementById("input-username").value.trim(),
-                bio: document.getElementById("input-bio").value.trim(),
-                edu: document.getElementById("input-edu").value.trim(),
-                work: document.getElementById("input-work").value.trim(),
-                blood: document.getElementById("input-blood").value.trim()
-            }, { merge: true }).then(() => {
-                alert("প্রোফাইল আপডেট সফল হয়েছে!");
-                toggleEditProfile();
-                loadProfileData();
-            });
-        }
-
-        function createPost() {
-            const text = document.getElementById("post-text").value.trim();
-            const file = document.getElementById("media-file").files[0];
-            const user = auth.currentUser;
-            if (!user) return alert("লগইন করুন!");
-            if (!text && !file) return alert("কিছু লিখুন বা ফাইল দিন!");
-
-            const timeStr = new Date().toLocaleString();
-            if (file) {
-                storage.ref().child('posts/' + Date.now() + '_' + file.name).put(file)
-                    .then(snap => snap.ref.getDownloadURL())
-                    .then(url => savePostDb(text, url, file.type.startsWith('video') ? 'video' : 'image', timeStr, user));
-            } else {
-                savePostDb(text, "", "", timeStr, user);
-            }
-        }
-
-        function savePostDb(content, mediaUrl, mediaType, timeStr, user) {
-            db.collection("posts").add({
-                authorId: user.uid,
-                author: user.email ? user.email.split('@')[0] : "User",
-                content: content,
-                mediaUrl: mediaUrl,
-                mediaType: mediaType,
-                createdAt: timeStr,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById("post-text").value = "";
-                document.getElementById("media-file").value = "";
-                document.getElementById("file-name").textContent = "No file chosen";
-                alert("পোস্ট সফল হয়েছে!");
-            });
-        }
-
-        function loadFeed() {
-            db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-                const container = document.getElementById("feed-container");
-                const videoContainer = document.getElementById("video-feed-container");
-                if (snapshot.empty) {
-                    container.innerHTML = `<div class="empty-feed"><h3>স্বাগতম!</h3><p>এই পেজে কোনো পোস্ট নেই।</p></div>`;
-                    videoContainer.innerHTML = `<div class="empty-feed"><p>কোনো ভিডিও কনটেন্ট নেই।</p></div>`;
-                    return;
-                }
-                let html = "";
-                let videoHtml = "";
-                snapshot.forEach(doc => {
-                    let p = doc.data();
-                    let media = p.mediaUrl ? (p.mediaType === 'video' ? `<div class="post-media-box"><video src="${p.mediaUrl}" class="post-media-content" controls></video></div>` : `<div class="post-media-box"><img src="${p.mediaUrl}" class="post-media-content"></div>`) : "";
-                    let card = `<div class="post-card"><div class="post-header"><span class="post-author-name">@${p.author}</span><span class="post-time-text">${p.createdAt}</span></div><div class="post-body-text">${p.content}</div>${media}</div>`;
-                    html += card;
-                    if(p.mediaType === 'video') videoHtml += card;
-                });
-                container.innerHTML = html;
-                if(videoHtml) videoContainer.innerHTML = videoHtml;
-            });
-        }
-
-        function loadUserPosts() {
-            const user = auth.currentUser;
-            if (!user) return;
-            db.collection("posts").where("authorId", "==", user.uid).orderBy("timestamp", "desc").onSnapshot(snapshot => {
-                const container = document.getElementById("user-posts-container");
-                if (snapshot.empty) {
-                    container.innerHTML = `<div class="empty-feed"><p>আপনার কোনো পোস্ট নেই!</p></div>`;
-                    return;
-                }
-                let html = "";
-                snapshot.forEach(doc => {
-                    let p = doc.data();
-                    let media = p.mediaUrl ? (p.mediaType === 'video' ? `<div class="post-media-box"><video src="${p.mediaUrl}" class="post-media-content" controls></video></div>` : `<div class="post-media-box"><img src="${p.mediaUrl}" class="post-media-content"></div>`) : "";
-                    html += `<div class="post-card"><div class="post-header"><span class="post-author-name">@${p.author}</span><span class="post-time-text">${p.createdAt}</span></div><div class="post-body-text">${p.content}</div>${media}</div>`;
-                });
-                container.innerHTML = html;
-            });
-        }
-
-        function loadAllUsers() {
-            db.collection("users").get().then(snapshot => {
-                const container = document.getElementById("friends-list-container");
-                let html = `<h3 style="margin-bottom: 10px;">People You May Know</h3>`;
-                snapshot.forEach(doc => {
-                    let u = doc.data();
-                    if(auth.currentUser && doc.id !== auth.currentUser.uid) {
-                        html += `<div class="settings-item"><span>@${u.username || u.name || 'User'}</span><button class="post-submit-btn" onclick="alert('ফ্রেন্ড রিকোয়েস্ট পাঠানো হয়েছে!')">Add Friend</button></div>`;
-                    }
-                });
-                container.innerHTML = html;
-            });
-        }
-
-        function searchUsersAndPosts(query) {
-            const q = query.toLowerCase();
-            document.querySelectorAll('.post-card').forEach(card => {
-                const text = card.textContent.toLowerCase();
-                card.style.display = text.includes(q) ? "block" : "none";
-            });
-        }
-    </script>
-</body>
-</html>
+</div>
