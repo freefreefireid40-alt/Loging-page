@@ -3,409 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialVibe - Home</title>
+    <title>SocialVibe - Home Feed</title>
     <meta name="manifest" href="manifest.json">
-    <!-- Firebase App & Firestore & Storage CDN -->
+    <!-- Google Fonts Inter for Professional Look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
         body {
             margin: 0;
             padding: 0;
-            background-color: #18191a;
-            font-family: Arial, sans-serif;
+            background-color: #121212;
             color: #e4e6eb;
-            padding-bottom: 60px; /* Space for bottom nav */
         }
-        /* Top Navbar (Facebook Style) */
-        .top-navbar {
-            background-color: #242526;
-            padding: 10px 15px;
+        /* Top Navigation Bar */
+        .navbar {
+            background-color: #1f2023;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #393a3b;
+            border-bottom: 1px solid #2f3136;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
         .nav-logo {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 700;
             color: #2d88ff;
             cursor: pointer;
+            letter-spacing: -0.5px;
         }
-        .top-icons {
+        .nav-right {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 12px;
         }
-        .icon-btn {
-            background-color: #3a3b3c;
-            color: white;
+        .nav-icon-btn {
+            background-color: #2d2f36;
             border: none;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
             cursor: pointer;
             font-size: 16px;
+            text-decoration: none;
         }
-        .icon-btn:hover {
-            background-color: #4e4f50;
-        }
-
-        /* Bottom Navbar (Facebook Style) */
-        .bottom-navbar {
-            background-color: #242526;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 55px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid #393a3b;
-            z-index: 1000;
-        }
-        .nav-tab {
-            background: none;
-            border: none;
-            color: #b0b3b8;
-            font-size: 22px;
-            cursor: pointer;
-            flex: 1;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .nav-tab.active {
-            color: #2d88ff;
-            border-bottom: 3px solid #2d88ff;
+        .nav-icon-btn:hover {
+            background-color: #3a3b40;
         }
 
+        /* Container */
         .container {
             max-width: 600px;
-            margin: 15px auto;
-            padding: 0 10px;
+            margin: 0 auto;
+            padding-bottom: 70px;
         }
 
         /* Stories Section */
         .stories-container {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            padding: 12px 16px;
             overflow-x: auto;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
+            background-color: #121212;
+            scrollbar-width: none;
         }
         .stories-container::-webkit-scrollbar {
             display: none;
         }
         .story-card {
             min-width: 110px;
-            height: 180px;
-            background: #242526;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            height: 190px;
+            border-radius: 12px;
+            background: #1f2023;
             flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid #2f3136;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 8px;
-            cursor: pointer;
-            border: 1px solid #393a3b;
+            padding: 10px;
+            background-size: cover;
+            background-position: center;
         }
         .story-card.create-story {
             justify-content: center;
             align-items: center;
-            background: #242526;
+            text-align: center;
+            background: #1f2023;
         }
-        .story-card img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .story-user {
-            position: relative;
-            z-index: 2;
-            font-size: 12px;
+        .create-story-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #2d88ff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
             font-weight: bold;
+            margin-bottom: 8px;
+            border: 3px solid #121212;
+        }
+        .create-story-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .story-user-name {
+            font-size: 12px;
+            font-weight: 600;
             color: white;
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+        .story-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.7) 100%);
+            z-index: 1;
         }
 
         /* Create Post Box */
-        .create-post {
-            background: #242526;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            margin-bottom: 15px;
+        .create-post-box {
+            background-color: #1f2023;
+            margin: 10px 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #2f3136;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .create-post textarea {
-            width: 100%;
-            background: #3a3b3c;
-            border: none;
-            border-radius: 6px;
+        .post-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #2d88ff;
             color: white;
-            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .post-textarea {
+            width: 100%;
+            background-color: #2d2f36;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
             font-size: 15px;
             resize: none;
-            box-sizing: border-box;
             outline: none;
         }
-        .post-options {
+        .post-actions-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
+            border-top: 1px solid #2f3136;
+            padding-top: 10px;
         }
-        .upload-btn-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        .btn-upload {
-            border: 2px solid #3a3b3c;
-            color: #b0b3b8;
-            background-color: #3a3b3c;
+        .upload-label {
+            background-color: #2d2f36;
+            color: #e4e6eb;
             padding: 6px 12px;
             border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .upload-btn-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
+        .upload-label:hover {
+            background-color: #3a3b40;
         }
-        .file-name {
-            font-size: 12px;
-            color: #b0b3b8;
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .submit-post {
+        .post-submit-btn {
             background-color: #2d88ff;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 6px 20px;
             border-radius: 6px;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            float: right;
         }
-        .submit-post:hover {
-            background-color: #1a6fd8;
+        .post-submit-btn:hover {
+            background-color: #1a75ff;
         }
-        .clearfix::after {
-            content: "";
-            clear: both;
-            display: table;
+        #file-name-display {
+            font-size: 12px;
+            color: #b0b3b8;
+            margin-left: 8px;
         }
 
-        /* Post Card */
+        /* Feed Section / Posts */
+        .feed-container {
+            padding: 0 16px;
+        }
         .post-card {
-            background: #242526;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            margin-bottom: 15px;
+            background-color: #1f2023;
+            border-radius: 12px;
+            border: 1px solid #2f3136;
+            margin-bottom: 12px;
+            padding: 14px;
         }
-        .post-author {
-            font-weight: bold;
-            color: #2d88ff;
-            margin-bottom: 8px;
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
-        .post-content {
-            color: #e4e6eb;
+        .post-author-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .post-author-name {
+            font-weight: 600;
             font-size: 15px;
-            word-break: break-word;
-            margin-bottom: 10px;
+            color: #ffffff;
         }
-        .post-media-container {
+        .post-time-text {
+            font-size: 11px;
+            color: #8a8d91;
+        }
+        .post-body-text {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #e4e6eb;
             margin-bottom: 10px;
-            border-radius: 6px;
+            word-break: break-word;
+        }
+        .post-media-box {
+            border-radius: 8px;
             overflow: hidden;
-            background-color: #3a3b3c;
+            background-color: #121212;
+            margin-bottom: 10px;
             position: relative;
         }
-        .post-media {
+        .post-media-content {
             width: 100%;
-            height: auto;
-            display: block;
-            max-height: 400px;
+            max-height: 450px;
             object-fit: contain;
+            display: block;
         }
-        .download-media-btn {
+        .download-btn {
             position: absolute;
             bottom: 10px;
             right: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
+            background: rgba(0,0,0,0.7);
             color: white;
             border: none;
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            z-index: 10;
         }
-        .download-media-btn:hover {
-            background-color: rgba(45, 136, 255, 0.9);
-        }
-        .post-time {
-            font-size: 12px;
-            color: #b0b3b8;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #393a3b;
-            padding-bottom: 8px;
-        }
-        .post-actions {
-            display: flex;
-            justify-content: space-around;
-            padding: 5px 0;
-            border-bottom: 1px solid #393a3b;
-            margin-bottom: 10px;
-        }
-        .action-btn {
-            background: none;
-            border: none;
-            color: #b0b3b8;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .action-btn:hover {
-            color: #2d88ff;
-        }
-        .comments-section {
+        .empty-feed {
+            background-color: #1f2023;
+            padding: 30px 20px;
+            border-radius: 12px;
+            text-align: center;
+            color: #8a8d91;
+            border: 1px solid #2f3136;
             margin-top: 10px;
         }
-        .comment-card {
-            background: #3a3b3c;
-            padding: 8px 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .comment-header {
-            font-weight: bold;
-            color: #2d88ff;
-            margin-bottom: 3px;
-        }
-        .comment-text {
-            color: #e4e6eb;
-            word-break: break-word;
-        }
-        .comment-input-container {
+
+        /* Bottom Facebook Style Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background-color: #1f2023;
             display: flex;
-            margin-top: 8px;
-            gap: 5px;
+            justify-content: space-around;
+            border-top: 1px solid #2f3136;
+            padding: 8px 0;
+            z-index: 1000;
         }
-        .comment-input {
-            flex: 1;
-            background: #3a3b3c;
-            border: 1px solid #4e4f50;
-            border-radius: 4px;
-            color: white;
-            padding: 6px 10px;
-            font-size: 13px;
-            outline: none;
-        }
-        .comment-btn {
-            background: #2d88ff;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+        .bottom-nav-item {
+            color: #8a8d91;
+            font-size: 22px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-        }
-        .feed-section {
-            background: #242526;
-            padding: 20px;
-            border-radius: 8px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
             text-align: center;
-            color: #b0b3b8;
+        }
+        .bottom-nav-item.active {
+            color: #2d88ff;
+        }
+        .bottom-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0; width: 100%;
+            height: 3px;
+            background-color: #2d88ff;
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Navbar -->
-    <div class="top-navbar">
-        <div class="nav-logo" onclick="window.location.reload()">SocialVibe</div>
-        <div class="top-icons">
-            <button class="icon-btn" onclick="goToProfile()" title="Profile">👤</button>
-            <button class="icon-btn" onclick="logout()" title="Logout" style="color: #f44336;">🚪</button>
+    <!-- Top Bar -->
+    <div class="navbar">
+        <div class="nav-logo" onclick="location.reload()">SocialVibe</div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="goToProfile()" title="Profile">👤</button>
+            <button class="nav-icon-btn" onclick="logout()" title="Logout" style="background-color: #a82222;">🚪</button>
         </div>
     </div>
 
     <div class="container">
         <!-- Stories Row -->
         <div class="stories-container">
-            <div class="story-card create-story" onclick="alert('Story feature coming soon!')">
-                <span style="font-size: 24px; color: #2d88ff; font-weight: bold;">+</span>
-                <span class="story-user" style="color: #e4e6eb; margin-top: 5px;">Create story</span>
+            <div class="story-card create-story" onclick="alert('স্টোরি আপলোড অপশন খুব শীঘ্রই যুক্ত করা হবে!')">
+                <div class="create-story-icon">+</div>
+                <div class="create-story-text">Create Story</div>
             </div>
-            <div class="story-card">
-                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" alt="Story">
-                <span class="story-user">Tanvir Ahmed</span>
+            <div class="story-card" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300');">
+                <div class="story-overlay"></div>
+                <div class="story-user-name">Tanvir Ahmed</div>
             </div>
-            <div class="story-card">
-                <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05" alt="Story">
-                <span class="story-user">Sumaiya Akter</span>
+            <div class="story-card" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=300');">
+                <div class="story-overlay"></div>
+                <div class="story-user-name">Sumaiya Akter</div>
             </div>
         </div>
 
-        <!-- Create Post Box -->
-        <div class="create-post clearfix">
-            <textarea id="post-text" rows="3" placeholder="What's on your mind?"></textarea>
-            
-            <div class="post-options">
-                <div class="upload-btn-wrapper">
-                    <button class="btn-upload">📸 Photo/Video</button>
-                    <input type="file" id="media-file" accept="image/*,video/*" onchange="previewMedia()">
+        <!-- Create Post Section -->
+        <div class="create-post-box">
+            <div class="post-input-row">
+                <div id="user-initial" class="user-avatar-small">U</div>
+                <textarea id="post-text" class="post-textarea" rows="2" placeholder="What's on your mind?"></textarea>
+            </div>
+            <div class="post-actions-row">
+                <div style="display: flex; align-items: center; overflow: hidden;">
+                    <label class="upload-label">
+                        📷 Photo/Video
+                        <input type="file" id="media-file" accept="image/*,video/*" style="display: none;" onchange="showFileName()">
+                    </label>
+                    <span id="file-name-display">No file chosen</span>
                 </div>
-                <span id="file-name" class="file-name">No file chosen</span>
-            </div>
-            
-            <div style="margin-top: 10px;" class="clearfix">
-                 <button onclick="createPost()" class="submit-post">Post</button>
+                <button class="post-submit-btn" onclick="createPost()">Post</button>
             </div>
         </div>
 
-        <!-- Feed Container -->
-        <div id="posts-container">
-            <div class="feed-section">Loading posts...</div>
+        <!-- Dynamic Feed Container -->
+        <div class="feed-container" id="feed-container">
+            <div class="empty-feed">
+                <p>কনটেন্ট লোড হচ্ছে...</p>
+            </div>
         </div>
     </div>
 
-    <!-- Bottom Facebook-Style Navbar -->
-    <div class="bottom-navbar">
-        <button class="nav-tab active" onclick="window.location.reload()" title="Home">🏠</button>
-        <button class="nav-tab" onclick="alert('Videos feed coming soon!')" title="Videos">▶️</button>
-        <button class="nav-tab" onclick="alert('Friends feature coming soon!')" title="Friends">👥</button>
-        <button class="nav-tab" onclick="alert('No new notifications')" title="Notifications">🔔</button>
-        <button class="nav-tab" onclick="goToProfile()" title="Profile & Settings">☰</button>
+    <!-- Bottom Navigation Bar (No Coming Soon, Clean UI) -->
+    <div class="bottom-nav">
+        <a href="home.html" class="bottom-nav-item active" title="Home">🏠</a>
+        <a href="videos.html" class="bottom-nav-item" title="Videos">▶️</a>
+        <a href="friends.html" class="bottom-nav-item" title="Friends">👥</a>
+        <a href="notifications.html" class="bottom-nav-item" title="Notifications">🔔</a>
+        <a href="menu.html" class="bottom-nav-item" title="Menu">☰</a>
     </div>
 
     <script>
@@ -429,8 +415,10 @@
             window.location.href = "index.html";
         }
 
+        document.getElementById("user-initial").textContent = currentUser.charAt(0).toUpperCase();
+
         window.onload = function() {
-            loadPostsRealtime();
+            loadFeedPosts();
         };
 
         function goToProfile() {
@@ -442,75 +430,84 @@
             window.location.href = "index.html";
         }
 
-        function previewMedia() {
-            const fileInput = document.getElementById('media-file');
-            const fileNameSpan = document.getElementById('file-name');
+        function showFileName() {
+            const fileInput = document.getElementById("media-file");
+            const fileNameDisplay = document.getElementById("file-name-display");
             if (fileInput.files.length > 0) {
-                fileNameSpan.textContent = fileInput.files[0].name;
+                fileNameDisplay.textContent = fileInput.files[0].name;
             } else {
-                fileNameSpan.textContent = "No file chosen";
+                fileNameDisplay.textContent = "No file chosen";
             }
         }
 
         function createPost() {
-            const content = document.getElementById("post-text").value.trim();
-            const mediaFile = document.getElementById("media-file").files[0];
-            
-            if (!content && !mediaFile) {
-                alert("দয়া করে কিছু লিখে বা মিডিয়া সিলেক্ট করে পোস্ট করুন!");
+            const text = document.getElementById("post-text").value.trim();
+            const fileInput = document.getElementById("media-file");
+            const file = fileInput.files[0];
+
+            if (!text && !file) {
+                alert("দয়া করে কিছু লিখুন অথবা ছবি/ভিডিও যুক্ত করুন!");
                 return;
             }
 
-            if (mediaFile) {
-                const storageRef = storage.ref();
-                const mediaRef = storageRef.child('post_media/' + Date.now() + '_' + mediaFile.name);
-                
-                mediaRef.put(mediaFile).then((snapshot) => {
-                    snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        let mediaType = mediaFile.type.startsWith('video') ? 'video' : 'image';
-                        savePostToFirestore(content, downloadURL, mediaType);
-                    });
-                }).catch((error) => {
-                    alert("ফাইল আপলোড করতে সমস্যা হয়েছে: " + error.message);
-                });
-            } else {
-                savePostToFirestore(content, null, null);
-            }
-        }
+            const btn = document.querySelector(".post-submit-btn");
+            btn.textContent = "Posting...";
+            btn.disabled = true;
 
-        function savePostToFirestore(content, mediaUrl, mediaType) {
             const now = new Date();
             const timeString = now.toLocaleDateString() + " at " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+            if (file) {
+                const storageRef = storage.ref().child('posts/' + Date.now() + '_' + file.name);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed', null, (error) => {
+                    alert("আপলোড ব্যর্থ হয়েছে: " + error.message);
+                    btn.textContent = "Post";
+                    btn.disabled = false;
+                }, () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        let mediaType = file.type.startsWith('video') ? 'video' : 'image';
+                        savePostToFirestore(text, downloadURL, mediaType, timeString);
+                    });
+                });
+            } else {
+                savePostToFirestore(text, "", "", timeString);
+            }
+        }
+
+        function savePostToFirestore(content, mediaUrl, mediaType, createdAt) {
             db.collection("posts").add({
                 author: currentUser,
                 content: content,
                 mediaUrl: mediaUrl,
                 mediaType: mediaType,
-                createdAt: timeString,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                likes: [],
-                comments: []
-            })
-            .then(() => {
+                createdAt: createdAt,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
                 document.getElementById("post-text").value = "";
                 document.getElementById("media-file").value = "";
-                document.getElementById("file-name").textContent = "No file chosen";
-            })
-            .catch((error) => {
-                alert("পোস্ট সেভ করতে সমস্যা হয়েছে: " + error.message);
+                document.getElementById("file-name-display").textContent = "No file chosen";
+                const btn = document.querySelector(".post-submit-btn");
+                btn.textContent = "Post";
+                btn.disabled = false;
+            }).catch((error) => {
+                alert("পোস্ট করতে সমস্যা হয়েছে: " + error.message);
+                const btn = document.querySelector(".post-submit-btn");
+                btn.textContent = "Post";
+                btn.disabled = false;
             });
         }
 
-        function loadPostsRealtime() {
-            const container = document.getElementById("posts-container");
+        function loadFeedPosts() {
+            const container = document.getElementById("feed-container");
 
             db.collection("posts").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 if (snapshot.empty) {
                     container.innerHTML = `
-                        <div class="feed-section">
-                            <h3>Welcome to SocialVibe!</h3>
-                            <p>আপনার পেজে এই মুহূর্তে কোনো পোস্ট নেই। উপরের বক্স থেকে আপনার স্ট্যাটাস শেয়ার করুন!</p>
+                        <div class="empty-feed">
+                            <h3 style="color:#ffffff; margin-bottom: 6px;">Welcome to SocialVibe!</h3>
+                            <p>আপনার পেজে এই মুহূর্তে কোনো পোস্ট নেই। উপরের বক্স থেকে আপনার স্ট্যাটাস বা কনটেন্ট শেয়ার করুন!</p>
                         </div>
                     `;
                     return;
@@ -519,13 +516,7 @@
                 let html = "";
                 snapshot.forEach((doc) => {
                     let post = doc.data();
-                    let postId = doc.id;
-                    
-                    let deleteBtn = "";
-                    if (post.author === currentUser) {
-                        let safePostId = "'" + postId + "'";
-                        deleteBtn = `<button onclick="deletePost(${safePostId})" style="background:none; border:none; color:#f44336; float:right; cursor:pointer; font-weight:bold;">Delete</button>`;
-                    }
+                    let authorInitial = post.author ? post.author.charAt(0).toUpperCase() : "U";
 
                     let mediaHtml = "";
                     if (post.mediaUrl) {
@@ -534,56 +525,32 @@
 
                         if (post.mediaType === 'video') {
                             mediaHtml = `
-                                <div class="post-media-container">
-                                    <video src="${post.mediaUrl}" class="post-media" controls></video>
-                                    <button class="download-media-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save to Gallery</button>
+                                <div class="post-media-box">
+                                    <video src="${post.mediaUrl}" class="post-media-content" controls></video>
+                                    <button class="download-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save</button>
                                 </div>`;
                         } else {
                             mediaHtml = `
-                                <div class="post-media-container">
-                                    <img src="${post.mediaUrl}" alt="Post Image" class="post-media">
-                                    <button class="download-media-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save to Gallery</button>
+                                <div class="post-media-box">
+                                    <img src="${post.mediaUrl}" alt="Post Media" class="post-media-content">
+                                    <button class="download-btn" onclick="downloadFile('${post.mediaUrl}', '${fileName}')">📥 Save</button>
                                 </div>`;
                         }
                     }
 
-                    let likes = post.likes || [];
-                    let isLiked = likes.includes(currentUser);
-                    let likeBtnColor = isLiked ? "#2d88ff" : "#b0b3b8";
-                    let likeText = isLiked ? "Liked (" + likes.length + ")" : "Like (" + likes.length + ")";
-
-                    let comments = post.comments || [];
-                    let commentsHtml = "";
-                    comments.forEach((c) => {
-                        commentsHtml += `
-                            <div class="comment-card">
-                                <div class="comment-header">@${c.user}</div>
-                                <div class="comment-text">${c.text}</div>
-                            </div>
-                        `;
-                    });
-
-                    let safeId = "'" + postId + "'";
-
                     html += `
                         <div class="post-card">
-                            <div class="post-author">@${post.author || 'Anonymous'} ${deleteBtn}</div>
-                            <div class="post-content">${post.content}</div>
-                            ${mediaHtml}
-                            <div class="post-time">${post.createdAt || ''}</div>
-                            
-                            <div class="post-actions">
-                                <button class="action-btn" style="color: ${likeBtnColor};" onclick="toggleLike(${safeId})">👍 ${likeText}</button>
-                                <button class="action-btn">💬 Comments (${comments.length})</button>
-                            </div>
-
-                            <div class="comments-section">
-                                ${commentsHtml}
-                                <div class="comment-input-container">
-                                    <input type="text" id="comment-input-${postId}" class="comment-input" placeholder="Write a comment...">
-                                    <button class="comment-btn" onclick="addComment(${safeId})">Send</button>
+                            <div class="post-header">
+                                <div class="post-author-info">
+                                    <div class="user-avatar-small" style="width:36px; height:36px; font-size:14px;">${authorInitial}</div>
+                                    <div>
+                                        <div class="post-author-name">@${post.author}</div>
+                                        <div class="post-time-text">${post.createdAt || ''}</div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="post-body-text">${post.content}</div>
+                            ${mediaHtml}
                         </div>
                     `;
                 });
@@ -609,60 +576,6 @@
                 .catch(() => {
                     window.open(fileUrl, '_blank');
                 });
-        }
-
-        function toggleLike(postId) {
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let likes = postData.likes || [];
-                    
-                    if (likes.includes(currentUser)) {
-                        likes = likes.filter(user => user !== currentUser);
-                    } else {
-                        likes.push(currentUser);
-                    }
-                    transaction.update(postRef, { likes: likes });
-                });
-            }).catch((error) => {
-                console.log("Like error: ", error);
-            });
-        }
-
-        function addComment(postId) {
-            const inputField = document.getElementById(`comment-input-${postId}`);
-            const commentText = inputField.value.trim();
-            if (!commentText) return;
-
-            const postRef = db.collection("posts").doc(postId);
-            db.runTransaction((transaction) => {
-                return transaction.get(postRef).then((doc) => {
-                    if (!doc.exists) throw "Post does not exist!";
-                    let postData = doc.data();
-                    let comments = postData.comments || [];
-                    
-                    comments.push({
-                        user: currentUser,
-                        text: commentText
-                    });
-
-                    transaction.update(postRef, { comments: comments });
-                });
-            }).then(() => {
-                inputField.value = "";
-            }).catch((error) => {
-                console.log("Comment error: ", error);
-            });
-        }
-
-        function deletePost(postId) {
-            if (confirm("আপনি কি নিশ্চিতভাবে এই পোস্টটি ডিলিট করতে চান?")) {
-                db.collection("posts").doc(postId).delete().catch((error) => {
-                    alert("পোস্ট ডিলিট করতে সমস্যা হয়েছে: " + error.message);
-                });
-            }
         }
     </script>
 </body>
