@@ -138,29 +138,64 @@
         .comments-section {
             margin-top: 10px;
         }
-        .comment-box {
-            font-size: 13px;
+        .comment-card {
             background: #3a3b3c;
-            padding: 6px 10px;
-            border-radius: 4px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .comment-header {
+            font-weight: bold;
+            color: #2d88ff;
+            margin-bottom: 3px;
+        }
+        .comment-text {
+            color: #e4e6eb;
+            word-break: break-word;
             margin-bottom: 5px;
         }
-        .comment-input-container {
+        .comment-footer-actions {
+            display: flex;
+            gap: 15px;
+            font-size: 11px;
+            color: #b0b3b8;
+        }
+        .comment-action-link {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .comment-action-link:hover {
+            color: #2d88ff;
+            text-decoration: underline;
+        }
+        .reply-container {
+            margin-top: 6px;
+            margin-left: 15px;
+            border-left: 2px solid #2d88ff;
+            padding-left: 8px;
+        }
+        .reply-box {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #d0d2d6;
+        }
+        .comment-input-container, .reply-input-container {
             display: flex;
             margin-top: 8px;
             gap: 5px;
         }
-        .comment-input {
+        .comment-input, .reply-input {
             flex: 1;
             background: #3a3b3c;
-            border: none;
+            border: 1px solid #4e4f50;
             border-radius: 4px;
             color: white;
             padding: 6px 10px;
             font-size: 13px;
             outline: none;
         }
-        .comment-btn {
+        .comment-btn, .reply-btn {
             background: #2d88ff;
             color: white;
             border: none;
@@ -169,6 +204,10 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 13px;
+        }
+        .reply-input-box {
+            display: none;
+            margin-top: 5px;
         }
         .feed-section {
             background: #242526;
@@ -293,8 +332,41 @@
                     // Comments handling
                     let comments = post.comments || [];
                     let commentsHtml = "";
-                    comments.forEach(c => {
-                        commentsHtml += `<div class="comment-box"><b>@${c.user}:</b> ${c.text}</div>`;
+                    
+                    comments.forEach((c, index) => {
+                        let cLikes = c.likes || [];
+                        let isCLiked = cLikes.includes(currentUser);
+                        let cLikeColor = isCLiked ? "#2d88ff" : "#b0b3b8";
+                        let cLikeText = isCLiked ? `Liked (${cLikes.length})` : `Like (${cLikes.length})`;
+                        
+                        let replies = c.replies || [];
+                        let repliesHtml = "";
+                        replies.forEach(r => {
+                            repliesHtml += `<div class="reply-box"><b>@${r.user}:</b> ${r.text}</div>`;
+                        });
+
+                        let safePostId = "'" + postId + "'";
+                        let commentIndex = index;
+
+                        commentsHtml += `
+                            <div class="comment-card">
+                                <div class="comment-header">@${c.user}</div>
+                                <div class="comment-text">${c.text}</div>
+                                <div class="comment-footer-actions">
+                                    <span class="comment-action-link" style="color: ${cLikeColor};" onclick="toggleCommentLike('${postId}', ${commentIndex})">${cLikeText}</span>
+                                    <span class="comment-action-link" onclick="toggleReplyBox('${postId}-${commentIndex}')">Reply</span>
+                                </div>
+                                <div class="reply-container">
+                                    ${repliesHtml}
+                                    <div id="reply-box-${postId}-${commentIndex}" class="reply-input-box">
+                                        <div class="reply-input-container">
+                                            <input type="text" id="reply-input-${postId}-${commentIndex}" class="reply-input" placeholder="Write a reply...">
+                                            <button class="reply-btn" onclick="addReply('${postId}', ${commentIndex})">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
                     });
 
                     let safeId = "'" + postId + "'";
@@ -359,7 +431,9 @@
                     
                     comments.push({
                         user: currentUser,
-                        text: commentText
+                        text: commentText,
+                        likes: [],
+                        replies: []
                     });
 
                     transaction.update(postRef, { comments: comments });
@@ -368,6 +442,69 @@
                 inputField.value = "";
             }).catch((error) => {
                 console.log("Comment error: ", error);
+            });
+        }
+
+        function toggleCommentLike(postId, commentIndex) {
+            const postRef = db.collection("posts").doc(postId);
+            db.runTransaction((transaction) => {
+                return transaction.get(postRef).then((doc) => {
+                    if (!doc.exists) throw "Post does not exist!";
+                    let postData = doc.data();
+                    let comments = postData.comments || [];
+                    
+                    if (comments[commentIndex]) {
+                        let cLikes = comments[commentIndex].likes || [];
+                        if (cLikes.includes(currentUser)) {
+                            cLikes = cLikes.filter(user => user !== currentUser);
+                        } else {
+                            cLikes.push(currentUser);
+                        }
+                        comments[commentIndex].likes = cLikes;
+                        transaction.update(postRef, { comments: comments });
+                    }
+                });
+            }).catch((error) => {
+                console.log("Comment like error: ", error);
+            });
+        }
+
+        function toggleReplyBox(boxId) {
+            const box = document.getElementById(`reply-box-${boxId}`);
+            if (box.style.display === "block") {
+                box.style.display = "none";
+            } else {
+                box.style.display = "block";
+            }
+        }
+
+        function addReply(postId, commentIndex) {
+            const inputField = document.getElementById(`reply-input-${postId}-${commentIndex}`);
+            const replyText = inputField.value.trim();
+            if (!replyText) return;
+
+            const postRef = db.collection("posts").doc(postId);
+            db.runTransaction((transaction) => {
+                return transaction.get(postRef).then((doc) => {
+                    if (!doc.exists) throw "Post does not exist!";
+                    let postData = doc.data();
+                    let comments = postData.comments || [];
+                    
+                    if (comments[commentIndex]) {
+                        if (!comments[commentIndex].replies) {
+                            comments[commentIndex].replies = [];
+                        }
+                        comments[commentIndex].replies.push({
+                            user: currentUser,
+                            text: replyText
+                        });
+                        transaction.update(postRef, { comments: comments });
+                    }
+                });
+            }).then(() => {
+                inputField.value = "";
+            }).catch((error) => {
+                console.log("Reply error: ", error);
             });
         }
 
