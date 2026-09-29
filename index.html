@@ -16,7 +16,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
         }
         .container {
             background: #ffffff;
@@ -24,7 +25,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             text-align: center;
         }
         h1 {
@@ -41,7 +42,7 @@
             margin-bottom: 15px;
             text-align: left;
         }
-        input {
+        input, textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -50,7 +51,7 @@
             outline: none;
             transition: border 0.3s;
         }
-        input:focus {
+        input:focus, textarea:focus {
             border-color: #0072b1;
         }
         .btn {
@@ -79,8 +80,46 @@
         .switch-text:hover, .forgot-text:hover {
             text-decoration: underline;
         }
+        
+        /* App Screen Styles */
         #app-screen {
             display: none;
+            text-align: left;
+        }
+        .post-box {
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .post-box textarea {
+            resize: none;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        .feed-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        .feed-post {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .feed-post p {
+            color: #333;
+            font-size: 15px;
+            word-break: break-word;
+        }
+        .feed-post span {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -105,10 +144,23 @@
         <span class="switch-text" id="switch-btn">Create new account</span>
     </div>
 
-    <!-- Main App Screen (After Login) -->
+    <!-- Main App Screen (Feed & Post) -->
     <div class="container" id="app-screen">
-        <h1>Welcome to Social Vibe!</h1>
-        <p class="subtitle">You are successfully logged in.</p>
+        <h1>Social Vibe</h1>
+        <p class="subtitle" id="user-email-display" style="margin-bottom: 15px;"></p>
+
+        <!-- Post Creation Box -->
+        <div class="post-box">
+            <textarea id="post-input" placeholder="What's on your mind?"></textarea>
+            <button class="btn" id="post-btn" style="margin-top: 0;">Post</button>
+        </div>
+
+        <h3>Feeds</h3>
+        <!-- Posts Feed Container -->
+        <div class="feed-container" id="feed-container">
+            <p style="text-align: center; color: #888; font-size: 14px; margin-top: 20px;">Loading posts...</p>
+        </div>
+
         <button class="btn" id="logout-btn" style="background-color: #d9534f;">Log Out</button>
     </div>
 
@@ -123,8 +175,17 @@
             signOut, 
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            onSnapshot, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // আপনার ফায়ারবেস প্রজেক্টের আসল কনফিগারেশন
+        // ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyB_44EQtMe4dZhNtKBo2YYKMpsUXKvOtdc",
             authDomain: "socialvibe-b0abb.firebaseapp.com",
@@ -137,6 +198,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         let isSignUp = false;
 
@@ -149,8 +211,13 @@
         const authContainer = document.getElementById('auth-container');
         const appScreen = document.getElementById('app-screen');
         const logoutBtn = document.getElementById('logout-btn');
+        
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const postInput = document.getElementById('post-input');
+        const postBtn = document.getElementById('post-btn');
+        const feedContainer = document.getElementById('feed-container');
 
-        // লগইন এবং সাইন-আপ মোড পরিবর্তনের লজিক
+        // লগইন এবং সাইন-আপ মোড পরিবর্তন
         switchBtn.addEventListener('click', (e) => {
             e.preventDefault();
             isSignUp = !isSignUp;
@@ -165,7 +232,7 @@
             }
         });
 
-        // ফর্ম সাবমিট হ্যান্ডলার (অ্যাকাউন্ট তৈরি বা লগইন)
+        // ফর্ম সাবমিট হ্যান্ডলার
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = emailInput.value.trim();
@@ -184,7 +251,7 @@
             }
         });
 
-        // পাসওয়ার্ড রিসেট হ্যান্ডলার
+        // পাসওয়ার্ড রিসেট
         forgotBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const email = emailInput.value.trim();
@@ -200,16 +267,64 @@
             }
         });
 
+        // পোস্ট করার লজিক (Firestore-এ সেভ হবে)
+        postBtn.addEventListener('click', async () => {
+            const postText = postInput.value.trim();
+            if (!postText) {
+                alert("কিছু একটা লিখুন!");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "posts"), {
+                    text: postText,
+                    author: auth.currentUser.email,
+                    timestamp: serverTimestamp()
+                });
+                postInput.value = ""; // ইনপুট খালি করা
+            } catch (error) {
+                alert("পোস্ট করতে সমস্যা হয়েছে: " + error.message);
+            }
+        });
+
+        // রিয়েল-টাইমে পোস্ট ফিড লোড করা
+        function loadPosts() {
+            const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                feedContainer.innerHTML = "";
+                if (snapshot.empty) {
+                    feedContainer.innerHTML = `<p style="text-align: center; color: #888; font-size: 14px; margin-top: 20px;">কোনো পোস্ট নেই। প্রথম পোস্টটি আপনি করুন!</p>`;
+                    return;
+                }
+                snapshot.forEach((doc) => {
+                    const post = doc.data();
+                    const postDiv = document.createElement('div');
+                    postDiv.className = "feed-post";
+                    
+                    const timeAgo = post.timestamp ? new Date(post.timestamp.toDate()).toLocaleString() : 'Just now';
+                    
+                    postDiv.innerHTML = `
+                        <p><strong>${post.author}</strong></p>
+                        <p style="margin-top: 5px;">${post.text}</p>
+                        <span>${timeAgo}</span>
+                    `;
+                    feedContainer.appendChild(postDiv);
+                });
+            });
+        }
+
         // লগআউট হ্যান্ডলার
         logoutBtn.addEventListener('click', async () => {
             await signOut(auth);
         });
 
-        // ইউজারের লগইন স্ট্যাটাস চেক করা
+        // ইউজার স্টেট চেক ও স্ক্রিন পরিবর্তন
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 authContainer.style.display = "none";
                 appScreen.style.display = "block";
+                userEmailDisplay.innerText = "Logged in as: " + user.email;
+                loadPosts(); // লগইন করলেই পোস্টগুলো লোড হবে
             } else {
                 authContainer.style.display = "block";
                 appScreen.style.display = "none";
