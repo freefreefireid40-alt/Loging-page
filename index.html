@@ -144,7 +144,7 @@
                 localStorage.setItem("allUsers", JSON.stringify(users));
                 localStorage.setItem("currentUser", username);
                 alert("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!");
-                window.location.href = "profile.html";
+                window.location.href = "home.html";
 
             } else {
                 // লগইন চেক
@@ -156,7 +156,7 @@
                         return;
                     }
                     localStorage.setItem("currentUser", username);
-                    window.location.href = "profile.html";
+                    window.location.href = "home.html";
                 } else {
                     alert("ভুল ইউজারনেম বা পাসওয়ার্ড!");
                 }
