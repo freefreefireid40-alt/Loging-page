@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialVibe - Home</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #18191a;
+            font-family: Arial, sans-serif;
+            color: #e4e6eb;
+        }
+        /* Top Navigation Bar */
+        .navbar {
+            background-color: #242526;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #393a3b;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d88ff;
+        }
+        .nav-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .nav-btn {
+            background-color: #3a3b3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .nav-btn:hover {
+            background-color: #4e4f50;
+        }
+        .logout-btn {
+            background-color: #d93838;
+        }
+        .logout-btn:hover {
+            background-color: #b52b2b;
+        }
+
+        /* Main Feed Container */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        /* Create Post Box */
+        .post-create-box {
+            background: #242526;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        .post-create-box textarea {
+            width: 100%;
+            background: #3a3b3c;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 15px;
+            color: white;
+            resize: none;
+            box-sizing: border-box;
+            height: 50px;
+            font-size: 15px;
+        }
+        .post-create-box button {
+            background-color: #2d88ff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .post-create-box button:hover {
+            background-color: #1a6fd8;
+        }
+
+        /* Feed / Welcome Section */
+        .feed-section {
+            background: #242526;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .feed-section h3 {
+            margin-bottom: 10px;
+            color: #2d88ff;
+        }
+        .feed-section p {
+            color: #b0b3b8;
+            font-size: 14px;
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <div class="navbar">
+        <div class="nav-logo">SocialVibe</div>
+        <div class="nav-right">
+            <button class="nav-btn" onclick="goToProfile()">Profile</button>
+            <button class="nav-btn logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        
+        <!-- Status / Post Box -->
+        <div class="post-create-box clearfix">
+            <textarea id="post-text" placeholder="What's on your mind, user?"></textarea>
+            <button onclick="createPost()">Post</button>
+        </div>
+
+        <!-- News Feed Area -->
+        <div class="feed-section">
+            <h3>Welcome to SocialVibe!</h3>
+            <p>আপনার পেজে এই মুহূর্তে কোনো নতুন পোস্ট নেই। আপনার মনের কথা বা স্ট্যাটাস উপরের বক্সে লিখে প্রথম পোস্টটি শেয়ার করুন!</p>
+        </div>
+
+    </div>
+
+    <script>
+        // লগইন চেক করা
+        const currentUser = localStorage.getItem("currentUser");
+        if (!currentUser) {
+            alert("দয়া করে আগে লগইন করুন!");
+            window.location.href = "index.html";
+        }
+
+        // প্রোফাইল পেজে যাওয়ার ফাংশন
+        function goToProfile() {
+            window.location.href = "profile.html";
+        }
+
+        // পোস্ট করার সাধারণ ফাংশন (সামনে আমরা এটাকে আরও উন্নত করব)
+        function createPost() {
+            const postText = document.getElementById("post-text").value.trim();
+            if(!postText) {
+                alert("দয়া করে কিছু লিখে তারপর পোস্ট করুন!");
+                return;
+            }
+            alert("আপনার পোস্টটি সফলভাবে তৈরি হয়েছে!");
+            document.getElementById("post-text").value = "";
+        }
+
+        // লগআউট ফাংশন
+        function logout() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
