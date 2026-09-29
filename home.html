@@ -57,6 +57,7 @@
         .container {
             max-width: 600px;
             margin: 20px auto;
+            padding: 0 10px;
         }
 
         /* Create Post Box */
@@ -76,7 +77,7 @@
             color: white;
             resize: none;
             box-sizing: border-box;
-            height: 50px;
+            height: 60px;
             font-size: 15px;
         }
         .post-create-box button {
@@ -94,21 +95,38 @@
             background-color: #1a6fd8;
         }
 
-        /* Feed / Welcome Section */
+        /* Post Card Style */
+        .post-card {
+            background: #242526;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+        .post-author {
+            font-weight: bold;
+            color: #2d88ff;
+            margin-bottom: 8px;
+        }
+        .post-content {
+            color: #e4e6eb;
+            font-size: 15px;
+            word-break: break-word;
+            margin-bottom: 10px;
+        }
+        .post-time {
+            font-size: 12px;
+            color: #b0b3b8;
+        }
+
+        /* Welcome Section */
         .feed-section {
             background: #242526;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .feed-section h3 {
-            margin-bottom: 10px;
-            color: #2d88ff;
-        }
-        .feed-section p {
-            color: #b0b3b8;
-            font-size: 14px;
+            margin-bottom: 15px;
         }
 
         .clearfix::after {
@@ -134,14 +152,13 @@
         
         <!-- Status / Post Box -->
         <div class="post-create-box clearfix">
-            <textarea id="post-text" placeholder="What's on your mind, user?"></textarea>
+            <textarea id="post-text" placeholder="What's on your mind?"></textarea>
             <button onclick="createPost()">Post</button>
         </div>
 
-        <!-- News Feed Area -->
-        <div class="feed-section">
-            <h3>Welcome to SocialVibe!</h3>
-            <p>আপনার পেজে এই মুহূর্তে কোনো নতুন পোস্ট নেই। আপনার মনের কথা বা স্ট্যাটাস উপরের বক্সে লিখে প্রথম পোস্টটি শেয়ার করুন!</p>
+        <!-- News Feed / Posts Container -->
+        <div id="posts-container">
+            <!-- পোস্টগুলো এখানে ডাইনামিকলি দেখাবে -->
         </div>
 
     </div>
@@ -154,20 +171,69 @@
             window.location.href = "index.html";
         }
 
+        // পেজ লোড হলেই পোস্টগুলো লোড করা
+        window.onload = function() {
+            loadPosts();
+        };
+
         // প্রোফাইল পেজে যাওয়ার ফাংশন
         function goToProfile() {
             window.location.href = "profile.html";
         }
 
-        // পোস্ট করার সাধারণ ফাংশন (সামনে আমরা এটাকে আরও উন্নত করব)
+        // পোস্ট তৈরি করার ফাংশন
         function createPost() {
             const postText = document.getElementById("post-text").value.trim();
             if(!postText) {
                 alert("দয়া করে কিছু লিখে তারপর পোস্ট করুন!");
                 return;
             }
-            alert("আপনার পোস্টটি সফলভাবে তৈরি হয়েছে!");
+
+            // সব পোস্ট লোড করা বা নতুন অ্যারে তৈরি
+            let posts = JSON.parse(localStorage.getItem("allPosts")) || [];
+
+            const newPost = {
+                author: currentUser,
+                content: postText,
+                time: new Date().toLocaleString()
+            };
+
+            // সবার উপরে নতুন পোস্ট যোগ করা
+            posts.unshift(newPost);
+            localStorage.setItem("allPosts", JSON.stringify(posts));
+
+            // ইনপুট বক্স খালি করা ও ফিড রিফ্রেশ করা
             document.getElementById("post-text").value = "";
+            loadPosts();
+        }
+
+        // পোস্টগুলো স্ক্রিনে দেখানোর ফাংশন
+        function loadPosts() {
+            const container = document.getElementById("posts-container");
+            let posts = JSON.parse(localStorage.getItem("allPosts")) || [];
+
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="feed-section">
+                        <h3>Welcome to SocialVibe!</h3>
+                        <p>আপনার পেজে এই মুহূর্তে কোনো পোস্ট নেই। উপরের বক্সে কিছু লিখে আপনার প্রথম পোস্টটি শেয়ার করুন!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            posts.forEach(post => {
+                html += `
+                    <div class="post-card">
+                        <div class="post-author">@${post.author}</div>
+                        <div class="post-content">${post.content}</div>
+                        <div class="post-time">${post.time}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         // লগআউট ফাংশন
