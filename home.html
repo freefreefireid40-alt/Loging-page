@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialVibe - Home</title>
+    <title>SocialVibe - Profile</title>
     <!-- Firebase App & Firestore CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -32,11 +32,7 @@
             font-size: 24px;
             font-weight: bold;
             color: #2d88ff;
-        }
-        .nav-right {
-            display: flex;
-            gap: 15px;
-            align-items: center;
+            cursor: pointer;
         }
         .nav-btn {
             background-color: #3a3b3c;
@@ -50,53 +46,43 @@
         .nav-btn:hover {
             background-color: #4e4f50;
         }
-        .logout-btn {
-            background-color: #d93838;
-        }
-        .logout-btn:hover {
-            background-color: #b52b2b;
-        }
 
-        /* Main Feed Container */
+        /* Profile Header Section */
         .container {
             max-width: 600px;
             margin: 20px auto;
             padding: 0 10px;
         }
-
-        /* Create Post Box */
-        .post-create-box {
+        .profile-header {
             background: #242526;
-            padding: 15px;
+            padding: 25px;
             border-radius: 8px;
+            text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             margin-bottom: 20px;
         }
-        .post-create-box textarea {
-            width: 100%;
-            background: #3a3b3c;
-            border: none;
-            border-radius: 20px;
-            padding: 12px 15px;
-            color: white;
-            resize: none;
-            box-sizing: border-box;
-            height: 60px;
-            font-size: 15px;
-        }
-        .post-create-box button {
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
             background-color: #2d88ff;
             color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            float: right;
-            margin-top: 10px;
+            font-size: 36px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
         }
-        .post-create-box button:hover {
-            background-color: #1a6fd8;
+        .profile-name {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .profile-username {
+            font-size: 14px;
+            color: #b0b3b8;
+            margin-bottom: 15px;
         }
 
         /* Post Card Style */
@@ -122,21 +108,11 @@
             font-size: 12px;
             color: #b0b3b8;
         }
-
-        /* Welcome Section */
-        .feed-section {
-            background: #242526;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
             margin-bottom: 15px;
-        }
-
-        .clearfix::after {
-            content: "";
-            clear: both;
-            display: table;
+            color: #b0b3b8;
         }
     </style>
 </head>
@@ -144,25 +120,27 @@
 
     <!-- Top Navigation -->
     <div class="navbar">
-        <div class="nav-logo">SocialVibe</div>
+        <div class="nav-logo" onclick="goToHome()">SocialVibe</div>
         <div class="nav-right">
-            <button class="nav-btn" onclick="goToProfile()">Profile</button>
-            <button class="nav-btn logout-btn" onclick="logout()">Log Out</button>
+            <button class="nav-btn" onclick="goToHome()">Home Feed</button>
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Container -->
     <div class="container">
         
-        <!-- Status / Post Box -->
-        <div class="post-create-box clearfix">
-            <textarea id="post-text" placeholder="What's on your mind?"></textarea>
-            <button onclick="createPost()">Post</button>
+        <!-- Profile Info -->
+        <div class="profile-header">
+            <div class="profile-avatar" id="avatar-letter">U</div>
+            <div class="profile-name" id="user-fullname">Loading...</div>
+            <div class="profile-username" id="user-handle">@username</div>
         </div>
 
-        <!-- News Feed / Posts Container -->
-        <div id="posts-container">
-            <div class="feed-section">Loading posts...</div>
+        <div class="section-title">My Posts</div>
+
+        <!-- User Posts Container -->
+        <div id="user-posts-container">
+            <div style="background: #242526; padding: 20px; text-align: center; border-radius: 8px;">Loading your posts...</div>
         </div>
 
     </div>
@@ -190,48 +168,43 @@
             window.location.href = "index.html";
         }
 
-        // পেজ লোড হলেই ফায়ারবেস থেকে রিয়েল-টাইম পোস্ট লোড করা
         window.onload = function() {
-            loadPostsRealtime();
+            loadUserProfile();
+            loadUserPosts();
         };
 
-        // প্রোফাইল পেজে যাওয়ার ফাংশন
-        function goToProfile() {
-            window.location.href = "profile.html";
+        function goToHome() {
+            window.location.href = "home.html";
         }
 
-        // ফায়ারবেসে পোস্ট সেভ করার ফাংশন
-        function createPost() {
-            const postText = document.getElementById("post-text").value.trim();
-            if(!postText) {
-                alert("দয়া করে কিছু লিখে তারপর পোস্ট করুন!");
-                return;
+        // ইউজারের তথ্য লোড করা
+        function loadUserProfile() {
+            document.getElementById("user-handle").innerText = "@" + currentUser;
+            
+            let users = JSON.parse(localStorage.getItem("allUsers")) || [];
+            let foundUser = users.find(u => u.username === currentUser);
+            
+            if (foundUser) {
+                document.getElementById("user-fullname").innerText = foundUser.fullname;
+                document.getElementById("avatar-letter").innerText = foundUser.fullname.charAt(0).toUpperCase();
+            } else {
+                document.getElementById("user-fullname").innerText = currentUser;
+                document.getElementById("avatar-letter").innerText = currentUser.charAt(0).toUpperCase();
             }
-
-            db.collection("posts").add({
-                author: currentUser,
-                content: postText,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                createdAt: new Date().toLocaleString()
-            })
-            .then(() => {
-                document.getElementById("post-text").value = "";
-            })
-            .catch((error) => {
-                alert("পোস্ট করতে সমস্যা হয়েছে: " + error.message);
-            });
         }
 
-        // ফায়ারবেস থেকে লাইভ পোস্ট ফেচ বা লোড করার ফাংশন
-        function loadPostsRealtime() {
-            const container = document.getElementById("posts-container");
+        // শুধু এই ইউজারের পোস্টগুলো ফায়ারবেস থেকে ফিল্টার করে আনা
+        function loadUserPosts() {
+            const container = document.getElementById("user-posts-container");
 
-            db.collection("posts").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+            db.collection("posts")
+              .where("author", "==", currentUser)
+              .orderBy("timestamp", "desc")
+              .onSnapshot((snapshot) => {
                 if (snapshot.empty) {
                     container.innerHTML = `
-                        <div class="feed-section">
-                            <h3>Welcome to SocialVibe!</h3>
-                            <p>আপনার পেজে এই মুহূর্তে কোনো পোস্ট নেই। উপরের বক্সে কিছু লিখে আপনার প্রথম পোস্টটি শেয়ার করুন!</p>
+                        <div style="background: #242526; padding: 20px; text-align: center; border-radius: 8px; color: #b0b3b8;">
+                            আপনি এখনও কোনো পোস্ট করেননি।
                         </div>
                     `;
                     return;
@@ -242,7 +215,7 @@
                     let post = doc.data();
                     html += `
                         <div class="post-card">
-                            <div class="post-author">@${post.author || 'Anonymous'}</div>
+                            <div class="post-author">@${post.author}</div>
                             <div class="post-content">${post.content}</div>
                             <div class="post-time">${post.createdAt || ''}</div>
                         </div>
@@ -251,12 +224,6 @@
 
                 container.innerHTML = html;
             });
-        }
-
-        // লগআউট ফাংশন
-        function logout() {
-            localStorage.removeItem("currentUser");
-            window.location.href = "index.html";
         }
     </script>
 </body>
