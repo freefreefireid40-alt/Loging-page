@@ -112,7 +112,7 @@
         <button class="btn" id="logout-btn" style="background-color: #d9534f;">Log Out</button>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { 
@@ -124,14 +124,15 @@
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // আপনার ফায়ারবেস প্রজেক্টের সঠিক কনফিগারেশন
+        // আপনার ফায়ারবেস প্রজেক্টের আসল কনফিগারেশন
         const firebaseConfig = {
-            apiKey: "AIzaSyDummyKeyForTemplate-ReplaceIfNeeded",
+            apiKey: "AIzaSyB_44EQtMe4dZhNtKBo2YYKMpsUXKvOtdc",
             authDomain: "socialvibe-b0abb.firebaseapp.com",
             projectId: "socialvibe-b0abb",
-            storageBucket: "socialvibe-b0abb.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
+            storageBucket: "socialvibe-b0abb.firebasestorage.app",
+            messagingSenderId: "1086874408492",
+            appId: "1:1086874408492:web:fdc1dd705b820d62c42389",
+            measurementId: "G-E5399L9T5T"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -149,8 +150,9 @@
         const appScreen = document.getElementById('app-screen');
         const logoutBtn = document.getElementById('logout-btn');
 
-        // মোড পরিবর্তন করার জন্য (Log in <-> Sign Up)
-        switchBtn.addEventListener('click', () => {
+        // লগইন এবং সাইন-আপ মোড পরিবর্তনের লজিক
+        switchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             isSignUp = !isSignUp;
             if (isSignUp) {
                 submitBtn.innerText = "Sign Up";
@@ -163,11 +165,11 @@
             }
         });
 
-        // ফর্ম সাবমিট হ্যান্ডলার (লগইন বা সাইন-আপ)
+        // ফর্ম সাবমিট হ্যান্ডলার (অ্যাকাউন্ট তৈরি বা লগইন)
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
             try {
                 if (isSignUp) {
@@ -182,9 +184,10 @@
             }
         });
 
-        // পাসওয়ার্ড রিকভারি
-        forgotBtn.addEventListener('click', async () => {
-            const email = emailInput.value;
+        // পাসওয়ার্ড রিসেট হ্যান্ডলার
+        forgotBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
             if (!email) {
                 alert("দয়া করে প্রথমে আপনার ইমেইল লিখুন!");
                 return;
@@ -202,7 +205,7 @@
             await signOut(auth);
         });
 
-        // ইউজার স্টেট চেক
+        // ইউজারের লগইন স্ট্যাটাস চেক করা
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 authContainer.style.display = "none";
